@@ -1,27 +1,34 @@
 #!/bin/bash
-path=~/.vim
-nvim_path=$XDG_CONFIG_HOME/nvim
+set -e
 
-if [ ! -e $path ]; then
-  mkdir -p $path
-fi
+# スクリプトのディレクトリを取得（どこから実行しても動作する）
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-if [ ! -e $XDG_CONFIG_HOME/nvim ]; then
-  mkdir -p $nvim_path
-fi
+# XDG_CONFIG_HOME が未設定の場合は ~/.config を使用
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 
-if [[ ! -e $HOME/.vimrc ]]; then
-  ln -s $PWD/vimrc $HOME/.vimrc
-fi
+vim_path="$HOME/.vim"
+nvim_path="$CONFIG_HOME/nvim"
 
-if [[ ! -e $nvim_path/init.lua ]]; then
-  ln -s $PWD/init.lua $nvim_path/init.lua
-fi
+# ディレクトリ作成
+mkdir -p "$vim_path"
+mkdir -p "$nvim_path"
 
-if [[ ! -e $nvim_path/lua ]]; then
-  ln -s $PWD/lua $nvim_path/lua
-fi
+# シンボリックリンク作成（既存の場合はスキップ）
+link_file() {
+  local src="$1"
+  local dest="$2"
+  if [[ -e "$dest" ]]; then
+    echo "Already exists: $dest"
+  else
+    ln -s "$src" "$dest"
+    echo "Linked: $src -> $dest"
+  fi
+}
 
-if [[ ! -e $nvim_path/after ]]; then
-  ln -s $PWD/after $nvim_path/after
-fi
+link_file "$SCRIPT_DIR/vimrc" "$HOME/.vimrc"
+link_file "$SCRIPT_DIR/init.lua" "$nvim_path/init.lua"
+link_file "$SCRIPT_DIR/lua" "$nvim_path/lua"
+link_file "$SCRIPT_DIR/after" "$nvim_path/after"
+
+echo "Done!"
