@@ -115,6 +115,73 @@ func TestValidateUser_shouldReturnValidationErrors(t *testing.T) {
 }
 ```
 
+### Table-Driven Tests でのエラー検証設計
+
+複数のboolフラグ（`wantErr`, `wantBadRequest`, `wantInternal`等）を使うのは冗長。`wantErr error` 型を使い、`errors.Is`/`errors.As` で検証する方がシンプル。
+
+❌ **悪い例** - 複数のboolフラグ:
+```go
+type test struct {
+    name           string
+    input          Input
+    wantErr        bool
+    wantBadRequest bool  // 冗長
+    wantInternal   bool  // 冗長
+}
+
+// 検証ロジックが複雑になる
+if tt.wantErr {
+    if tt.wantBadRequest {
+        // BadRequest検証
+    }
+    if tt.wantInternal {
+        // Internal検証
+    }
+}
+```
+
+✅ **良い例** - error型を直接指定:
+```go
+type test struct {
+    name    string
+    input   Input
+    wantErr error  // nilならエラーなし、具体的なエラーなら型を検証
+}
+
+tests := []test{
+    {"valid input", validInput, nil},
+    {"invalid email", invalidEmail, ErrBadRequest},
+    {"db failure", dbFailInput, ErrInternal},
+}
+
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        _, err := DoSomething(tt.input)
+
+        if tt.wantErr == nil {
+            require.NoError(t, err)
+            return
+        }
+        require.Error(t, err)
+        assert.ErrorIs(t, err, tt.wantErr)
+    })
+}
+```
+
+カスタムエラー型の場合は `errors.As` を使用:
+```go
+type test struct {
+    name        string
+    input       Input
+    wantErrType error  // 期待するエラー型（nilならエラーなし）
+}
+
+// 検証
+if tt.wantErrType != nil {
+    require.ErrorAs(t, err, &tt.wantErrType)
+}
+```
+
 ## テストヘルパー
 
 ### t.Helper() の使用
@@ -258,6 +325,62 @@ go tool cover -html=coverage.out -o coverage.html
 go tool cover -func=coverage.out
 ```
 
+## テストの検証（テストが正しくテストしているか確認）
+
+テストコードを書いた後、**そのテストが意図通りに動作しているか**を必ず検証する。
+
+### 1. 失敗すべき時に失敗するか確認
+
+エラーを期待するテストケースがある場合、アサーションを一時的に変更して確認：
+
+```go
+// 元のアサーション
+if tt.wantErr != (err != nil) {
+    t.Errorf("got error=%v, want error=%v", err, tt.wantErr)
+}
+
+// 検証用: これに変更して実行
+if err != nil {
+    t.Errorf("got error=%v", err)
+}
+// → エラーを期待するテストが FAIL になれば正常
+// → 全て PASS なら、エラーが返されていない問題あり
+```
+
+### 2. 各テストケースが個別のデータを使用しているか確認
+
+Table-driven tests では、デバッグ出力を追加して確認：
+
+```go
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        t.Logf("Running with: %+v", tt)  // テストデータを出力
+        // ...
+    })
+}
+```
+
+全テストケースで同じ値が出力される場合、データ共有の問題あり。
+
+### 3. 境界値・エッジケースの網羅確認
+
+テストケース追加時のチェックリスト：
+- 正常系と異常系の両方があるか
+- 境界値（0, -1, 最大値, 最小値）をテストしているか
+- 各テストケースが**異なる入力値**を使用しているか
+
+### 4. テスト実行時の観察ポイント
+
+```bash
+# verbose モードで実行し、各サブテストの実行を確認
+go test -v -run "TestXxx" ./...
+
+# 以下を確認:
+# - 期待する数のサブテストが実行されているか
+# - 各サブテストが異なる名前で表示されているか
+# - 実行時間が妥当か（即座に終わる場合は要注意）
+```
+
 ## アンチパターン
 
 ❌ グローバル状態への依存
@@ -266,3 +389,4 @@ go tool cover -func=coverage.out
 ❌ 外部サービスへの実際の接続
 ❌ t.Parallel() なしの独立したテスト
 ❌ エラーメッセージのない assert
+❌ テストが正しく動作しているか検証せずにコミット
