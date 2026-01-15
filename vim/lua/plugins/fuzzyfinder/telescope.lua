@@ -77,6 +77,7 @@ local config = function()
     }
   })
   require('telescope').load_extension('ui-select')
+  require('telescope').load_extension('ghq')
 end
 
 local telescope = {
@@ -85,6 +86,7 @@ local telescope = {
     { 'nvim-lua/plenary.nvim' },
     { 'nvim-telescope/telescope-ui-select.nvim' },
     { 'nvim-telescope/telescope-live-grep-args.nvim' },
+    { 'nvim-telescope/telescope-ghq.nvim' },
   },
   init = function()
     local function builtin(name)
@@ -109,6 +111,11 @@ local telescope = {
     nmap('mc', builtin('commands')())
     nmap('mb', builtin('buffers')())
     nmap('<Leader>s', builtin('lsp_document_symbols')())
+
+    -- ghq project switcher
+    nmap('mj', function()
+      require('telescope').extensions.ghq.list()
+    end)
   end,
   config = config,
 }
