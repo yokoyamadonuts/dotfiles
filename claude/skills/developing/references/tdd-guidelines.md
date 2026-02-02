@@ -187,6 +187,60 @@ test('shouldNotApplyDiscountForOrdersUnder100', () => {
 });
 ```
 
+### 4. エラー検証の複雑なフラグ制御
+❌ **悪い例** - 複数のboolフラグで冗長な制御:
+```javascript
+const testCases = [
+  {
+    name: 'invalid email',
+    input: { email: 'bad' },
+    wantErr: true,
+    wantValidationError: true,  // 冗長
+    wantNotFoundError: false,   // 冗長
+  },
+  // ...
+];
+
+// 検証ロジックが複雑になる
+if (tc.wantErr) {
+  if (tc.wantValidationError) { /* ... */ }
+  if (tc.wantNotFoundError) { /* ... */ }
+}
+```
+
+✅ **良い例** - 期待するエラーを直接指定:
+```javascript
+const testCases = [
+  {
+    name: 'valid input',
+    input: validInput,
+    expectedError: null,  // エラーなし
+  },
+  {
+    name: 'invalid email',
+    input: { email: 'bad' },
+    expectedError: ValidationError,  // 具体的なエラー型
+  },
+  {
+    name: 'user not found',
+    input: { id: 'unknown' },
+    expectedError: NotFoundError,
+  },
+];
+
+// 検証ロジックがシンプル
+if (tc.expectedError === null) {
+  expect(error).toBeNull();
+} else {
+  expect(error).toBeInstanceOf(tc.expectedError);
+}
+```
+
+**ポイント**:
+- `wantErr` + `wantXxxError` のようなフラグの組み合わせは避ける
+- 期待するエラー（型または値）を直接指定し、`null`/`nil`でエラーなしを表現
+- 検証ロジックの分岐を減らし、テストの可読性を向上
+
 ### 3. 脆弱なテスト（アサーションが多すぎる）
 ❌ **悪い例** - アサーションが多すぎてテストが脆弱:
 ```javascript
