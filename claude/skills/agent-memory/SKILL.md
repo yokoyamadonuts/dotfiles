@@ -112,7 +112,77 @@ rg "検索ワード" .claude/skills/agent-memory/memories/ --no-ignore --hidden
 
 ## メモリ操作
 
-### 保存
+### 保存（重複チェック付き）
+
+**重要**: 新規作成前に必ず類似ファイルを検索し、統合を検討する。
+
+#### ステップ1: 類似ファイルの検索
+
+```bash
+# 1. 同じカテゴリ内のファイル一覧を確認
+ls .claude/skills/agent-memory/memories/{category}/
+
+# 2. キーワードでsummaryを検索（複数キーワードで試す）
+rg "^summary:.*{キーワード1}" .claude/skills/agent-memory/memories/ --no-ignore --hidden
+rg "^summary:.*{キーワード2}" .claude/skills/agent-memory/memories/ --no-ignore --hidden
+
+# 3. タグで検索
+rg "^tags:.*{関連タグ}" .claude/skills/agent-memory/memories/ --no-ignore --hidden
+```
+
+#### ステップ2: 統合判断
+
+| 検索結果 | アクション |
+|---------|-----------|
+| 類似ファイルなし | 新規作成 |
+| 同一トピックのファイルあり | **既存ファイルに追記** |
+| 関連するが別トピック | 新規作成 + `related`フィールドでリンク |
+
+**統合すべきケース**:
+- 同じ機能/ライブラリについての追加調査
+- 以前の調査の続き・更新
+- 同じバグの再発・追加情報
+
+**別ファイルにすべきケース**:
+- 異なる問題・異なる解決策
+- 独立したトピック（たまたまキーワードが一致）
+
+#### ステップ3a: 既存ファイルに追記（類似ファイルがある場合）
+
+```bash
+# 既存ファイルを読み込み
+cat .claude/skills/agent-memory/memories/{category}/{existing-file}.md
+
+# 追記（updatedを更新し、新しいセクションを追加）
+```
+
+追記時のフォーマット:
+```markdown
+---
+summary: "更新された要約（新しい発見を含める）"
+created: 2025-01-15
+updated: 2025-02-03  # ← 追加/更新
+status: in-progress
+tags: [tag1, tag2, new-tag]  # ← 必要に応じてタグ追加
+---
+
+## 背景・コンテキスト
+[既存の内容]
+
+## 発見・結論
+[既存の内容]
+
+### 追加調査 (2025-02-03)  # ← 日付付きで追記
+[新しい発見・情報]
+
+## 詳細
+[既存 + 新規の内容]
+
+## 次のステップ
+[更新された残作業]
+```
+
+#### ステップ3b: 新規作成（類似ファイルがない場合）
 
 ```bash
 # カテゴリフォルダを作成（必要な場合）
@@ -155,10 +225,63 @@ rm .claude/skills/agent-memory/memories/{category}/{topic}.md
 
 ### 整理・統合
 
-関連するメモリが増えた場合:
-1. 統合ファイルを作成
-2. 元ファイルの内容を移行
-3. 元ファイルを削除
+#### 統合すべきサイン
+
+以下の状態になったら統合を検討:
+- 同じカテゴリに5つ以上のファイルがある
+- 似たトピックのファイルが複数存在する
+- ファイル名の末尾に `-2`, `-v2`, `-続き` などがついている
+
+#### 統合手順
+
+1. **関連ファイルを特定**
+   ```bash
+   # カテゴリ内のファイル一覧
+   ls -la .claude/skills/agent-memory/memories/{category}/
+
+   # summary一覧で関連性を確認
+   rg "^summary:" .claude/skills/agent-memory/memories/{category}/ --no-ignore --hidden
+   ```
+
+2. **統合ファイルを作成**
+   - 最も包括的なファイルをベースにする
+   - 他のファイルの内容をセクションとして追加
+   - 日付順に情報を整理
+
+3. **元ファイルを削除**
+   ```bash
+   rm .claude/skills/agent-memory/memories/{category}/{old-file}.md
+   ```
+
+#### 統合テンプレート
+
+```markdown
+---
+summary: "統合された包括的な要約"
+created: 2025-01-10  # 最初の調査日
+updated: 2025-02-03
+status: resolved
+tags: [統合されたタグ一覧]
+consolidated_from: [file1.md, file2.md, file3.md]  # 統合元を記録
+---
+
+## 概要
+[統合されたトピックの全体像]
+
+## 調査履歴
+
+### 初回調査 (2025-01-10)
+[file1.mdの内容]
+
+### 追加調査 (2025-01-20)
+[file2.mdの内容]
+
+### 最終解決 (2025-02-03)
+[file3.mdの内容]
+
+## 結論・ベストプラクティス
+[学んだことのまとめ]
+```
 
 ## コンテンツガイドライン
 
