@@ -11,6 +11,7 @@ This is a personal dotfiles repository for managing development environment conf
 - **git/** - Git configuration with GPG signing, aliases, and difftastic integration
 - **vim/** - Extensive Neovim configuration using Lua and lazy.nvim plugin manager
 - **zsh/** - Z shell configuration with custom aliases, functions, and key bindings
+- **fish/** - Fish shell configuration (alternative to zsh)
 - **tmux/** - Terminal multiplexer configuration with platform-specific variants
 - **wezterm/** - WezTerm terminal emulator configuration
 - **karabiner/** - macOS keyboard remapping configuration
@@ -28,7 +29,8 @@ cd dotfiles
 cd git && ./install.sh
 cd ../vim && ./install.sh
 cd ../tmux && ./install.sh
-cd ../zsh && ./install.sh
+cd ../zsh && ./install.sh   # OR
+cd ../fish && ./install.sh  # Fish shell alternative
 cd ../wezterm && ./install.sh
 cd ../karabiner && ./install.sh  # macOS only
 cd ../claude && ./install.sh
