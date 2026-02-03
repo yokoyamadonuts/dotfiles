@@ -137,3 +137,66 @@ bindkey '^k' gss
 
 # direnv
 command -v direnv > /dev/null 2>&1 && eval "$(direnv hook zsh)"
+
+# ============================================================
+# Git Worktree Management for Parallel Claude Code Workflows
+# ============================================================
+# Usage:
+#   wt        - List all worktrees with fzf selection
+#   wt a      - Switch to worktree 'a'
+#   wt-add a  - Create new worktree 'a' from current branch
+#   wt-rm a   - Remove worktree 'a'
+#   za/zb/zc  - Quick switch to worktree a/b/c
+# ============================================================
+
+export WORKTREE_BASE="${WORKTREE_BASE:-$HOME/.worktrees}"
+
+# List and switch worktrees with fzf
+wt() {
+  if [[ -z "$1" ]]; then
+    # fzf selection mode
+    local selected=$(git worktree list | fzf --height=40% --reverse \
+      --preview='cd {1} && git log --oneline -10' \
+      --preview-window=down:40% | awk '{print $1}')
+    [[ -n "$selected" ]] && cd "$selected"
+  else
+    # Direct switch mode
+    local repo_name=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
+    local target="$WORKTREE_BASE/$repo_name-$1"
+    if [[ -d "$target" ]]; then
+      cd "$target"
+    else
+      echo "Worktree '$1' not found. Create with: wt-add $1"
+    fi
+  fi
+}
+
+# Create new worktree
+wt-add() {
+  [[ -z "$1" ]] && { echo "Usage: wt-add <name> [branch]"; return 1; }
+  local repo_name=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
+  local target="$WORKTREE_BASE/$repo_name-$1"
+  local branch="${2:-$(git branch --show-current)}"
+  mkdir -p "$WORKTREE_BASE"
+  git worktree add "$target" -b "worktree-$1" "$branch" 2>/dev/null || \
+    git worktree add "$target" "$branch"
+  echo "Created worktree: $target"
+  cd "$target"
+}
+
+# Remove worktree
+wt-rm() {
+  [[ -z "$1" ]] && { echo "Usage: wt-rm <name>"; return 1; }
+  local repo_name=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)")
+  local target="$WORKTREE_BASE/$repo_name-$1"
+  git worktree remove "$target" --force 2>/dev/null && \
+    echo "Removed worktree: $target" || \
+    echo "Failed to remove worktree: $target"
+}
+
+# Quick aliases for worktree switching (za, zb, zc, zd, ze)
+alias za='wt a'
+alias zb='wt b'
+alias zc='wt c'
+alias zd='wt d'
+alias ze='wt e'
