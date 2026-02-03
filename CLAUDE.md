@@ -201,6 +201,33 @@ Create skills for tasks done 2+ times per day:
 | `/tdd` | TDD workflow guidance |
 | `/build-fix` | Build error resolution |
 
+### Skills vs Commands (関係性ガイド)
+
+| コマンド | 使用するスキル | 備考 |
+|---------|---------------|------|
+| `/impl` | `developing` | TDDワークフロー実行 |
+| `/tdd` | `developing`, `writing-tests` | TDDサイクルガイド |
+| `/spec` | `analyzing-requirements`, `planning-tasks` | 設計→タスク生成 |
+
+### 計画系スキルの使い分け
+
+| 状況 | 使うスキル | 出力先 |
+|------|-----------|--------|
+| シンプルなタスク（1-2日） | `plan-first` | `docs/plans/` |
+| 大規模な機能設計 | `analyzing-requirements` → `planning-tasks` | `docs/DESIGN.md` → `docs/TODO.md` |
+
+**迷ったら**: まず `plan-first` で軽く計画を書く。複雑だと気づいたら `analyzing-requirements` に切り替え。
+
+### TDD系スキルの関係
+
+```
+developing (親スキル: TDDワークフロー全体)
+    └── writing-tests (サブスキル: テスト作成に特化)
+```
+
+- `developing`: RED→GREEN→REFACTOR サイクル + 設計原則
+- `writing-tests`: テスト命名、AAA/Given-When-Then、言語別パターン
+
 ### Creating New Skills
 
 1. Create `claude/skills/<skill-name>/SKILL.md`

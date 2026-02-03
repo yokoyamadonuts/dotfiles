@@ -8,6 +8,12 @@ allowed-tools: ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "TodoWrite", "A
 
 RED → GREEN → REFACTOR サイクルをガイドし、テストファーストで機能を実装します。
 
+> **関連スキル**
+> - `developing` - TDDワークフロー全体の詳細なガイドライン
+> - `writing-tests` - テスト作成のベストプラクティス（言語別パターン）
+>
+> 本コマンドは上記スキルの簡易版。詳細なガイドラインが必要な場合はスキルを参照。
+
 ## 使い方
 
 ```

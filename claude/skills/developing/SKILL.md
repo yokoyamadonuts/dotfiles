@@ -161,6 +161,10 @@ src/
 
 ### ステップ3: REDフェーズ - 失敗するテストを書く
 
+> **詳細なテスト作成ガイドラインは `writing-tests` スキルを参照**
+> テストの命名規則、AAA/Given-When-Thenパターン、言語別のベストプラクティスは
+> writing-testsスキルに詳細な説明がある。
+
 **テストファイルの配置（コロケーション）:**
 ```
 src/features/auth/
@@ -288,6 +292,17 @@ npm test         # テストを実行
 [BEHAVIORAL] feat: ユーザー認証機能を追加
 [BEHAVIORAL] fix: ログインエラーハンドリングを修正
 ```
+
+## 関連スキル
+
+### writing-tests（サブスキル）
+テスト作成に特化したスキル。本スキル（developing）のREDフェーズで参照：
+- テストの命名規則（3要素: 何を、条件、結果）
+- AAA/Given-When-Thenパターン
+- 言語別テストパターン（React/TypeScript、Go、Rust）
+- モック・スタブの使い方
+
+**本スキルとの関係**: developingはTDDワークフロー全体を管理し、writing-testsはその中のテスト作成部分を詳細化するサブスキル。
 
 ## リソース
 
