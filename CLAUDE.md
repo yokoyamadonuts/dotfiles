@@ -180,12 +180,23 @@ Example:
 ### Available Custom Agents
 
 See `claude/agents/` for specialized agents:
+
+**開発系:**
 - `committer` - Git commit with conventional format
 - `planner` - Implementation planning
 - `code-reviewer` - Code quality review
 - `security-reviewer` - Security vulnerability detection
 - `tdd-guide` - Test-driven development guidance
 - `build-error-resolver` - Build/type error fixing
+- `architect` - System design and scalability
+- `refactor-cleaner` - Dead code detection and cleanup
+- `doc-updater` - Documentation generation/update
+- `e2e-runner` - Playwright E2E test management
+
+**プロダクト・戦略系:**
+- `executive-reviewer` - Strategic/business perspective review
+- `user-researcher` - User research and insight synthesis
+- `devils-advocate` - Strategy stress-testing and assumption validation
 
 ## Custom Skills
 
@@ -200,6 +211,12 @@ Create skills for tasks done 2+ times per day:
 | `/commit` | Intelligent commit with conventional format |
 | `/tdd` | TDD workflow guidance |
 | `/build-fix` | Build error resolution |
+| `/write-prd` | PRD creation with Socratic questioning |
+| `/product-strategy` | Strategy with Rumelt's Kernel + DHM |
+| `/devils-advocate` | Stress-test plans/strategies/designs |
+| `/competitive-research` | Parallel agent competitive research |
+| `/analyze-data` | Structured data analysis workflow |
+| `/pptx` | Markdown to PowerPoint generation |
 
 ### Skills vs Commands (関係性ガイド)
 
@@ -208,6 +225,11 @@ Create skills for tasks done 2+ times per day:
 | `/impl` | `developing` | TDDワークフロー実行 |
 | `/tdd` | `developing`, `writing-tests` | TDDサイクルガイド |
 | `/spec` | `analyzing-requirements`, `planning-tasks` | 設計→タスク生成 |
+| `/write-prd` | `write-prd` | ソクラテス式質問+マルチ視点レビュー |
+| `/product-strategy` | `product-strategy`, `competitive-research` | Rumelt's Kernel戦略策定 |
+| `/devils-advocate` | `devils-advocate` | 計画のストレステスト |
+| `/analyze-data` | `analyze-data` | ファネル/A/Bテスト分析 |
+| `/pptx` | `pptx` | Markdown→PowerPoint変換 |
 
 ### 計画系スキルの使い分け
 
@@ -217,6 +239,25 @@ Create skills for tasks done 2+ times per day:
 | 大規模な機能設計 | `analyzing-requirements` → `planning-tasks` | `docs/DESIGN.md` → `docs/TODO.md` |
 
 **迷ったら**: まず `plan-first` で軽く計画を書く。複雑だと気づいたら `analyzing-requirements` に切り替え。
+
+### プロダクト系スキルの使い分け
+
+| 状況 | 使うスキル | 出力先 |
+|------|-----------|--------|
+| 機能仕様の作成 | `write-prd` | `docs/prd-*.md` |
+| 戦略策定 | `product-strategy` | `docs/strategy-*.md` |
+| 計画のストレステスト | `devils-advocate` | 対話中 or レポート |
+| 競合・技術比較 | `competitive-research` | `docs/research-*.md` |
+| データ分析 | `analyze-data` | `docs/analysis-*.md` |
+| プレゼン生成 | `pptx` | `*.pptx` |
+
+**典型的なワークフロー:**
+1. `competitive-research` → 競合調査
+2. `product-strategy` → 戦略策定（内部で競合調査+Devil's Advocate実行）
+3. `write-prd` → 戦略に基づくPRD作成（内部でマルチ視点レビュー実行）
+4. `analyzing-requirements` → PRDから技術設計（DESIGN.md）
+5. `planning-tasks` → 設計からタスク分解（TODO.md）
+6. `pptx` → 戦略書やPRDからプレゼン生成
 
 ### TDD系スキルの関係
 
