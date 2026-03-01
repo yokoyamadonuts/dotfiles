@@ -217,6 +217,9 @@ Create skills for tasks done 2+ times per day:
 | `/competitive-research` | Parallel agent competitive research |
 | `/analyze-data` | Structured data analysis workflow |
 | `/pptx` | Markdown to PowerPoint generation |
+| `/mvp-scaffolding` | MVP project scaffolding with Buy vs Build |
+| `/ship-check` | Pre-release product quality audit |
+| `/build-or-buy` | Build vs Buy decision documentation |
 
 ### Skills vs Commands (関係性ガイド)
 
@@ -230,6 +233,9 @@ Create skills for tasks done 2+ times per day:
 | `/devils-advocate` | `devils-advocate` | 計画のストレステスト |
 | `/analyze-data` | `analyze-data` | ファネル/A/Bテスト分析 |
 | `/pptx` | `pptx` | Markdown→PowerPoint変換 |
+| `/mvp-scaffolding` | `mvp-scaffolding`, `build-or-buy` | MVPスタック選定+初期構築 |
+| `/ship-check` | `ship-check` | リリース前品質監査 |
+| `/build-or-buy` | `build-or-buy`, `competitive-research` | Build vs Buy意思決定 |
 
 ### 計画系スキルの使い分け
 
@@ -250,14 +256,19 @@ Create skills for tasks done 2+ times per day:
 | 競合・技術比較 | `competitive-research` | `docs/research-*.md` |
 | データ分析 | `analyze-data` | `docs/analysis-*.md` |
 | プレゼン生成 | `pptx` | `*.pptx` |
+| MVP初期構築 | `mvp-scaffolding` | `docs/scaffolding-*.md` |
+| Build vs Buy判定 | `build-or-buy` | `docs/decisions/build-or-buy-*.md` |
+| リリース前監査 | `ship-check` | `docs/ship-check-*.md` |
 
 **典型的なワークフロー:**
-1. `competitive-research` → 競合調査
-2. `product-strategy` → 戦略策定（内部で競合調査+Devil's Advocate実行）
-3. `write-prd` → 戦略に基づくPRD作成（内部でマルチ視点レビュー実行）
-4. `analyzing-requirements` → PRDから技術設計（DESIGN.md）
-5. `planning-tasks` → 設計からタスク分解（TODO.md）
-6. `pptx` → 戦略書やPRDからプレゼン生成
+1. `mvp-scaffolding` → スタック選定+Buy vs Build判定（新規プロジェクト時）
+2. `competitive-research` → 競合調査
+3. `product-strategy` → 戦略策定（内部で競合調査+Devil's Advocate実行）
+4. `write-prd` → 戦略に基づくPRD作成（内部でマルチ視点レビュー実行）
+5. `analyzing-requirements` → PRDから技術設計（DESIGN.md）
+6. `planning-tasks` → 設計からタスク分解（TODO.md）
+7. `pptx` → 戦略書やPRDからプレゼン生成
+8. `ship-check` → リリース前のプロダクト品質監査
 
 ### TDD系スキルの関係
 
