@@ -84,6 +84,17 @@ AskUserQuestion({
         { label: "個人開発者", description: "フリーランスや個人プロジェクト" }
       ],
       multiSelect: false
+    },
+    {
+      question: "主なディストリビューション戦略は？",
+      header: "配信",
+      options: [
+        { label: "Build in Public", description: "SNSでの開発過程公開（Pieter Levels方式）" },
+        { label: "Free Tool Funnel", description: "無料ツールで集客→有料版にアップセル（Marc Lou方式）" },
+        { label: "Content Marketing", description: "ブログ・SEOでの長期的な流入" },
+        { label: "既存チャネル", description: "既に持っているオーディエンスを活用" }
+      ],
+      multiSelect: false
     }
   ]
 })
@@ -104,6 +115,29 @@ AskUserQuestion({
 ### ステップ5: COHERENT ACTIONS（整合的アクション）の策定
 
 選択された方針に基づいて、互いに強化し合うアクションプランを策定する。各アクションをDHMモデルで評価する。
+
+### ステップ5.5: インディー開発者向け戦略パターン
+
+ソロ開発者・小規模チームの場合、以下の検証済みパターンを検討する：
+
+#### Build in Public（Pieter Levels方式）
+- 開発プロセスを公開してオーディエンスを構築
+- DHM評価: **D[高]**（コミュニティとの直接的なつながり）/ **H[高]**（個人のブランドは模倣困難）/ **M[中]**（直接収益には寄与しないが認知度向上）
+
+#### Output Goals > Outcome Goals（Marc Lou方式）
+- 「MRR $10K」ではなく「毎週1機能リリース」にフォーカス
+- コントロールできるアウトプットを目標にする
+- DHM評価: **D[中]**/ **H[低]**（概念自体はコピー可）/ **M[高]**（継続的なリリースが収益を改善）
+
+#### PMFサイクル4ステージ（Tibo方式）
+- **検証中** → **成長中** → **安定** → **Kill** のサイクルでポートフォリオ管理
+- 3ヶ月収益ゼロのプロダクトはKill or Pivot
+- 勝者に集中し、敗者を素早く切る
+
+#### BYOKモデル（Tony Dinh方式）
+- AI機能を持つプロダクトでユーザーが自分のAPIキーを持ち込む
+- DHM評価: **D[中]**（APIキー管理のUXは劣る）/ **H[中]**（モデル自体は模倣可）/ **M[高]**（インフラコストゼロ、利益率最大化）
+- 判断基準: AI APIコストがMRRの20%を超えるならBYOK検討
 
 ### ステップ6: Devil's Advocate（反論検証）
 

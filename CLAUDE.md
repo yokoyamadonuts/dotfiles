@@ -220,6 +220,9 @@ Create skills for tasks done 2+ times per day:
 | `/mvp-scaffolding` | MVP project scaffolding with Buy vs Build |
 | `/ship-check` | Pre-release product quality audit |
 | `/build-or-buy` | Build vs Buy decision documentation |
+| `/validate-idea` | Pre-code idea validation (6-sec test, payment test) |
+| `/launch-playbook` | Multi-platform launch strategy |
+| `/build-in-public` | Build in Public content strategy |
 
 ### Skills vs Commands (関係性ガイド)
 
@@ -236,6 +239,9 @@ Create skills for tasks done 2+ times per day:
 | `/mvp-scaffolding` | `mvp-scaffolding`, `build-or-buy` | MVPスタック選定+初期構築 |
 | `/ship-check` | `ship-check` | リリース前品質監査 |
 | `/build-or-buy` | `build-or-buy`, `competitive-research` | Build vs Buy意思決定 |
+| `/validate-idea` | `validate-idea` | コード前のアイデア検証 |
+| `/launch-playbook` | `launch-playbook` | マルチプラットフォームローンチ |
+| `/build-in-public` | `build-in-public` | Build in Publicコンテンツ戦略 |
 
 ### 計画系スキルの使い分け
 
@@ -259,6 +265,9 @@ Create skills for tasks done 2+ times per day:
 | MVP初期構築 | `mvp-scaffolding` | `docs/scaffolding-*.md` |
 | Build vs Buy判定 | `build-or-buy` | `docs/decisions/build-or-buy-*.md` |
 | リリース前監査 | `ship-check` | `docs/ship-check-*.md` |
+| アイデア検証 | `validate-idea` | `docs/validation-*.md` |
+| ローンチ計画 | `launch-playbook` | `docs/launch-plan-*.md` |
+| コンテンツ戦略 | `build-in-public` | `docs/content-strategy-*.md` |
 
 **典型的なワークフロー:**
 1. `mvp-scaffolding` → スタック選定+Buy vs Build判定（新規プロジェクト時）
@@ -269,6 +278,13 @@ Create skills for tasks done 2+ times per day:
 6. `planning-tasks` → 設計からタスク分解（TODO.md）
 7. `pptx` → 戦略書やPRDからプレゼン生成
 8. `ship-check` → リリース前のプロダクト品質監査
+
+**インディー開発者ワークフロー:**
+```
+validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
+→ launch-playbook → build-in-public → analyze-data(Kill or Keep)
+```
+→ 詳細は `docs/indie-dev-roadmap.md` を参照
 
 ### TDD系スキルの関係
 
