@@ -208,6 +208,7 @@ Create skills for tasks done 2+ times per day:
 |-------|---------|
 | `/techdebt` | Detect and remove duplicate/dead code |
 | `/review` | Comprehensive PR review |
+| `/design-intent` | Design intent review (WHY, trade-offs, ship judgment) |
 | `/commit` | Intelligent commit with conventional format |
 | `/tdd` | TDD workflow guidance |
 | `/build-fix` | Build error resolution |
@@ -238,6 +239,7 @@ Create skills for tasks done 2+ times per day:
 | `/pptx` | `pptx` | Markdown→PowerPoint変換 |
 | `/mvp-scaffolding` | `mvp-scaffolding`, `build-or-buy` | MVPスタック選定+初期構築 |
 | `/ship-check` | `ship-check` | リリース前品質監査 |
+| `/design-intent` | `design-intent` | 設計意図・メンタルモデル共有レビュー |
 | `/build-or-buy` | `build-or-buy`, `competitive-research` | Build vs Buy意思決定 |
 | `/validate-idea` | `validate-idea` | コード前のアイデア検証 |
 | `/launch-playbook` | `launch-playbook` | マルチプラットフォームローンチ |
@@ -265,6 +267,7 @@ Create skills for tasks done 2+ times per day:
 | MVP初期構築 | `mvp-scaffolding` | `docs/scaffolding-*.md` |
 | Build vs Buy判定 | `build-or-buy` | `docs/decisions/build-or-buy-*.md` |
 | リリース前監査 | `ship-check` | `docs/ship-check-*.md` |
+| 設計意図レビュー | `design-intent` | `docs/design-intent-*.md` |
 | アイデア検証 | `validate-idea` | `docs/validation-*.md` |
 | ローンチ計画 | `launch-playbook` | `docs/launch-plan-*.md` |
 | コンテンツ戦略 | `build-in-public` | `docs/content-strategy-*.md` |
@@ -285,6 +288,21 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 → launch-playbook → build-in-public → analyze-data(Kill or Keep)
 ```
 → 詳細は `docs/indie-dev-roadmap.md` を参照
+
+### レビュー系スキルの使い分け
+
+```
+/review          → 技術品質チェック（WHAT: コード品質、セキュリティ、テスト等）
+/design-intent   → 設計意図・出荷判断（WHY: なぜこの設計か、トレードオフ、メンタルモデル）
+/commit          → 両方パス後にコミット
+```
+
+| 状況 | 使うスキル | 目的 |
+|------|-----------|------|
+| コード変更のレビュー | `/review` | バグ・品質・セキュリティの自動チェック |
+| 設計判断の確認 | `/design-intent` | WHY・トレードオフの対話的共有 |
+| AI生成コードの検証 | `/design-intent` | 作者の理解度確認 |
+| 出荷可否判断 | `/review` + `/design-intent` | 技術品質 + 設計意図の両面で判断 |
 
 ### TDD系スキルの関係
 
