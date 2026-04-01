@@ -13,8 +13,9 @@ YouTube動画のトランスクリプト（字幕/キャプション）を取得
 
 | ツール | インストール | APIキー | 特徴 |
 |--------|-------------|---------|------|
-| `yt-dlp` | `brew install yt-dlp` | 不要 | 汎用。動画DLも可能 |
-| `youtube-transcript-api` | `pip install youtube-transcript-api` | 不要 | 軽量。JSON出力。CLI付き |
+| `yt-dlp` | `brew install yt-dlp` | 不要 | 汎用。メタデータ+字幕。最も安定 |
+| `youtube-transcript-api` | `pip install youtube-transcript-api` | 不要 | 軽量。`--format text`で前処理不要 |
+| MCP サーバー | `claude mcp add` | 不要 | Claude Code直接統合。Shell不要 |
 
 ## コアワークフロー
 
@@ -36,9 +37,10 @@ AskUserQuestion({
     question: "YouTube字幕取得ツールがインストールされていません。どちらをインストールしますか？",
     header: "ツール選択",
     options: [
-      { label: "yt-dlp (Recommended)", description: "brew install yt-dlp — 汎用的で安定" },
-      { label: "youtube-transcript-api", description: "pip install youtube-transcript-api — 軽量、Python製" },
-      { label: "両方", description: "両方インストール" }
+      { label: "yt-dlp (Recommended)", description: "brew install yt-dlp — 汎用的で安定。メタデータも取得可" },
+      { label: "youtube-transcript-api", description: "pip install youtube-transcript-api — 軽量。--format textで即プレーンテキスト" },
+      { label: "MCP サーバー", description: "claude mcp add — Shell不要でClaude Codeと直接統合" },
+      { label: "両方 (yt-dlp + transcript-api)", description: "メタデータはyt-dlp、字幕はtranscript-api" }
     ],
     multiSelect: false
   }]
@@ -84,15 +86,25 @@ yt-dlp --write-auto-subs --sub-langs "ja,en" --sub-format srt --skip-download \
 # 利用可能な字幕一覧
 youtube_transcript_api --list-transcripts VIDEO_ID
 
-# 日本語トランスクリプトをJSON形式で取得
+# プレーンテキストで取得（前処理不要、最も簡単）
+youtube_transcript_api VIDEO_ID --languages ja --format text > /tmp/yt-VIDEO_ID-clean.txt
+
+# JSON形式で取得（タイムスタンプ付き）
 youtube_transcript_api VIDEO_ID --languages ja --format json > /tmp/yt-VIDEO_ID.json
 
-# 英語トランスクリプト
-youtube_transcript_api VIDEO_ID --languages en --format json > /tmp/yt-VIDEO_ID.json
-
 # 日本語に翻訳して取得（英語字幕しかない場合）
-youtube_transcript_api VIDEO_ID --languages en --translate ja --format json > /tmp/yt-VIDEO_ID.json
+youtube_transcript_api VIDEO_ID --languages en --translate ja --format text > /tmp/yt-VIDEO_ID-clean.txt
 ```
+
+#### 方法C: MCP サーバーを使用（Claude Code直接統合）
+
+セットアップ（初回のみ）:
+```bash
+claude mcp add --scope user youtube-transcript npx @fabriqa.ai/youtube-transcript-mcp@latest
+```
+
+セットアップ後はClaude Codeが直接 `get-transcript` ツールを呼び出せる。Shell コマンド不要。
+25,000トークン上限あり。60分超の動画はタイムスタンプなしで取得するとサイズ削減可能。
 
 #### 字幕が見つからない場合
 
