@@ -224,6 +224,7 @@ Create skills for tasks done 2+ times per day:
 | `/validate-idea` | Pre-code idea validation (6-sec test, payment test) |
 | `/launch-playbook` | Multi-platform launch strategy |
 | `/build-in-public` | Build in Public content strategy |
+| `/harness-engineering` | Claude Code harness optimization for projects |
 
 ### Skills vs Commands (関係性ガイド)
 
