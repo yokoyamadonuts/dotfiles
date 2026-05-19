@@ -334,16 +334,68 @@ deno run --allow-read \
 
 **Maximum Viable Refinement** 到達 = **Zero-Slop** ソフトウェア。
 
+## Coherence スクリプト使用法
+
+VCSDD-lite は CEG 操作のために4つの Deno TypeScript スクリプトを提供する。
+
+### スクリプト一覧
+
+| スクリプト | 用途 | 主要オプション |
+|---|---|---|
+| `coherence-scan.ts` | frontmatter → coherence.json 生成 | `--feature <name>` `--out <path>` `--mode lean\|strict` `--dry-run` |
+| `coherence-validate.ts` | 整合性違反検出（6種類） | `--feature <name>` `--strict` `--format json\|md` |
+| `coherence-impact.ts` | 影響範囲BFS分析 | `--feature <name>` `--node <id>` `--depth <N>` `--format md` |
+| `coherence-trace.ts` | req → spec/test/impl/verify トレース | `--feature <name>` `--req <id>` または `--bead <id>` |
+
+### 共通仕様
+
+- 作業ディレクトリ: プロジェクトルート（`docs/vcsdd/` がある場所）
+- Exit code: `0` 成功 / `1` validation error / `2` usage error
+- 全スクリプトは `--allow-read`（書き込みする scan は `--allow-write` も）が必要
+
+### 典型的な実行フロー
+
+```bash
+# 1. CEG構築
+deno run --allow-read --allow-write \
+  ~/.claude/skills/vcsdd-lite/scripts/coherence-scan.ts --feature user-auth
+
+# 2. 整合性チェック
+deno run --allow-read \
+  ~/.claude/skills/vcsdd-lite/scripts/coherence-validate.ts --feature user-auth --format md
+
+# 3. 影響範囲確認（仕様変更時）
+deno run --allow-read \
+  ~/.claude/skills/vcsdd-lite/scripts/coherence-impact.ts \
+  --feature user-auth --node design:user-schema --format md
+
+# 4. 要件トレース
+deno run --allow-read \
+  ~/.claude/skills/vcsdd-lite/scripts/coherence-trace.ts \
+  --feature user-auth --req req:user-login
+```
+
+### テスト
+
+```bash
+deno test --allow-read --allow-write ~/.claude/skills/vcsdd-lite/scripts/
+```
+
 ## トレーサビリティチェーン
 
-VSDDの全成果物は双方向に追跡可能：
+VCSDD-liteの全成果物は **bead identifier** で双方向に追跡可能：
 
 ```
 仕様要件 → 検証プロパティ → テストケース → 実装 → 敵対的レビュー → 形式証明
+                    ↑
+              bead:B-XXX-<slug> で全次元を束ねる
 ```
 
-- 「このコード行はなぜ存在するか？」→ 仕様要件まで遡れる
+- 「このコード行はなぜ存在するか？」→ bead経由で要件まで遡れる
 - 「このモジュールはなぜ純粋関数か？」→ Phase 1bの純粋境界マップに遡れる
+- `coherence-trace.ts --req <id>` で機械的にトレース表を生成可能
+
+bead 命名規則と表テンプレートは **references/trace-templates.md** を参照。
 
 ## コア原則
 
@@ -383,8 +435,28 @@ VSDDの全成果物は双方向に追跡可能：
 
 ## 出力ファイル
 
-- `docs/vsdd-spec-[feature].md` - 振る舞い仕様 + 検証アーキテクチャ
-- `docs/vsdd-review-[YYYY-MM-DD].md` - 敵対的レビューレポート
+VCSDD-lite は機能ごとに以下のディレクトリ構造を生成する：
+
+```
+docs/vcsdd/<feature>/
+├── specs/                    # 振る舞い仕様（frontmatter必須）
+│   ├── behavioral-spec.md
+│   └── verification-arch.md
+├── coherence.json            # CEG（coherence-scan.ts が生成）
+├── reviews/                  # 敵対的レビュー記録
+│   └── sprint-N-review.md
+├── evidence/                 # Phase 2a/2b 証拠
+│   ├── red-phase.log
+│   └── green-phase.log
+├── verification/             # Phase 5 形式検証結果
+│   └── prop-results.md
+└── traceability.md           # 手動補強したトレース表（任意）
+```
+
+旧テンプレート（参考）:
+
+- `docs/vsdd-spec-[feature].md` → `docs/vcsdd/<feature>/specs/behavioral-spec.md`
+- `docs/vsdd-review-[YYYY-MM-DD].md` → `docs/vcsdd/<feature>/reviews/sprint-N-review.md`
 
 ### 仕様書テンプレート
 
