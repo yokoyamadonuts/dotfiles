@@ -1,0 +1,25 @@
+{
+  "feature": "valid-feature",
+  "nodes": {
+    "spec:auth-flow": {
+      "type": "spec",
+      "confidence": "green",
+      "status": "reviewed",
+      "depends_on": ["design:user-schema"],
+      "satisfies": ["req:user-login"],
+      "verified_by": ["test:auth-edge-cases"],
+      "beads": ["bead:B-001-login"]
+    },
+    "spec:session-mgmt": {
+      "type": "spec",
+      "confidence": "green",
+      "status": "reviewed",
+      "depends_on": ["design:token-store"],
+      "satisfies": ["req:session-persistence"],
+      "verified_by": ["test:session-tests"],
+      "beads": ["bead:B-002-session"]
+    }
+  },
+  "edge_count": 6,
+  "issues_count": 0
+}

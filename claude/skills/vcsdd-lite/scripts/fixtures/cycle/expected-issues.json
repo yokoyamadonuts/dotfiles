@@ -1,0 +1,4 @@
+{
+  "expected_kinds": ["cycle"],
+  "min_errors": 1
+}

@@ -1,0 +1,4 @@
+{
+  "expected_kinds": ["missing_reference"],
+  "min_errors": 1
+}
