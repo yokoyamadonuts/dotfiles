@@ -1,6 +1,6 @@
 ---
-name: vsdd
-description: Verified Spec-Driven Development（VSDD）— 仕様駆動+TDD+敵対的検証+形式検証を統合したAI協調開発パイプライン。正確性が重要なシステム（金融、インフラ、セキュリティ等）の開発に使用。「VSDDで開発」「仕様駆動で実装」「形式検証付きで開発」「adversarial reviewして」「Sarcasmotronレビュー」などのリクエストで起動。
+name: vcsdd-lite
+description: VSDD（仕様駆動+TDD+敵対的検証+形式検証）にCoherence-Driven Development（CoDD）を統合した軽量パイプライン。仕様・テスト・実装・検証の依存グラフ（CEG）を追跡し、変更時の影響範囲を自動分析。正確性が重要なシステム（金融・インフラ・セキュリティ等）の開発に使用。「VCSDDで開発」「coherence チェック」「影響範囲分析」「仕様駆動で実装」「形式検証付きで開発」「VSDDで開発」「adversarial reviewして」で起動。
 ---
 
 # Verified Spec-Driven Development (VSDD)
@@ -22,8 +22,9 @@ VSDDは3つのパラダイムを**逐次ゲート**として統合する：
 | ロール | 担当 | 機能 |
 |--------|------|------|
 | **Architect** | 人間（開発者） | 戦略的ビジョン、ドメイン専門知識、仕様承認、紛争調停 |
-| **Builder** | Claude（メインAI） | 仕様作成、テスト生成、コード実装、リファクタリング |
-| **Adversary** | 別モデル or 別コンテキスト | 容赦なき批判的レビュー。仕様・テスト・実装すべてを攻撃 |
+| **Builder** | Claude（メインAI） | 仕様作成、テスト生成、コード実装、リファクタリング、CEG構築 |
+| **Adversary** | 別モデル or 別コンテキスト | 容赦なき批判的レビュー。仕様・テスト・実装・CEG整合性すべてを攻撃 |
+| **Verifier** | Builderと別コンテキスト or 別モデル | 形式検証ツールのコーディネート、プロパティテスト・ファジング実行管理 |
 
 **認知的多様性**: Adversaryは可能な限りBuilderと異なるモデル/コンテキストを使用する。同じ盲点を避けるため。
 
@@ -41,6 +42,17 @@ VSDDは3つのパラダイムを**逐次ゲート**として統合する：
 プロトタイプやスクリプトにはフルセレモニーは不要。TDD + 簡易的な敵対的レビューだけでも十分。
 
 > **既存 `developing` スキルとの関係**: `developing` はTDDワークフロー。VSDDはそれを含みつつ、仕様駆動・敵対的検証・形式検証を追加した上位パイプライン。
+
+## モード（lean / strict）
+
+VCSDD-lite は2つの運用モードを持つ。Phase 1 開始時に決定し、`docs/vcsdd/<feature>/coherence.json` の `mode` フィールドに記録される。
+
+| モード | 用途 | 厳格度 |
+|---|---|---|
+| **lean** | プロトタイプ、MVP、個人プロジェクト | Sprint契約・形式検証は選択的 |
+| **strict** | 金融・認証・インフラ・長期保守コード | Sprint契約・形式検証・敵対的レビュー全て必須 |
+
+詳細は **references/strict-vs-lean.md** を参照。
 
 ## コアワークフロー
 
