@@ -282,6 +282,18 @@ Adversaryの指摘をパイプライン全体にフィードバック：
 
 **収束するまでループを継続。**
 
+#### 4a: 影響伝播分析（CoDD強化）
+
+Adversaryが仕様レベル欠陥を指摘した場合、修正が他ノードに波及するかをCEGで確認：
+
+```bash
+deno run --allow-read \
+  ~/.claude/skills/vcsdd-lite/scripts/coherence-impact.ts \
+  --feature <feature> --node <changed-node-id> --format md
+```
+
+影響範囲に含まれる全ノードを再レビュー対象とする。影響伝播BFSアルゴリズムの詳細は **references/coherence.md** を参照。
+
 ### Phase 5 — 形式硬化（Formal Hardening）
 
 Phase 1bで設計した検証アーキテクチャを実装に対して**実行**する。
@@ -308,6 +320,17 @@ Phase 1bで設計した検証アーキテクチャを実装に対して**実行*
 | **テスト** | Adversaryが意味のある未テストシナリオを見つけられない。ミューテーションテストの殺傷率が高い |
 | **実装** | Adversaryがコードに存在しない問題を捏造し始める |
 | **検証** | Phase 1bカタログのすべてのプロパティが形式証明を通過。ファザーが何も見つけない。純粋境界が維持 |
+| **CEG整合性** | `coherence-validate.ts --strict` が exit code 0、全 spec が confidence: green、bead completeness: full |
+
+**Phase 6 自動チェック**:
+```bash
+deno run --allow-read --allow-write \
+  ~/.claude/skills/vcsdd-lite/scripts/coherence-scan.ts --feature <feature>
+deno run --allow-read \
+  ~/.claude/skills/vcsdd-lite/scripts/coherence-validate.ts --feature <feature> --strict
+```
+
+両方がexit 0で完了し、かつ4次元すべてが独立して敵対的レビューを生存したときに完了。
 
 **Maximum Viable Refinement** 到達 = **Zero-Slop** ソフトウェア。
 
