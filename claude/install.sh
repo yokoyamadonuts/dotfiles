@@ -48,3 +48,11 @@ if [[ ! -e $MCP_CONFIG_FILE ]]; then
 else
   echo "MCP config already exists at $MCP_CONFIG_FILE, skipping"
 fi
+
+# Optional dependency check for vcsdd-lite skill scripts
+if ! command -v deno &> /dev/null; then
+  echo ""
+  echo "Note: 'deno' not found. vcsdd-lite skill scripts (coherence-scan/validate/impact/trace) require Deno."
+  echo "Install: curl -fsSL https://deno.land/install.sh | sh"
+  echo "(The vcsdd-lite skill itself works without scripts — they are optional automation.)"
+fi
