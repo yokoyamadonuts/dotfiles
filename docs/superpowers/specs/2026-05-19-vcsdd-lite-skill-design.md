@@ -65,10 +65,34 @@ claude/skills/vcsdd-lite/                  # git mv claude/skills/vsdd
 └── scripts/
     ├── _types.ts                          # 共通型定義
     ├── _frontmatter.ts                    # YAMLフロントマター抽出ヘルパ
+    ├── _frontmatter.test.ts               # ヘルパの単体テスト
     ├── coherence-scan.ts                  # frontmatter → coherence.json
+    ├── coherence-scan.test.ts             # scan単体テスト
     ├── coherence-validate.ts              # 循環/欠落/Orphan検出
+    ├── coherence-validate.test.ts         # validate単体テスト
     ├── coherence-impact.ts                # BFS影響範囲分析
-    └── coherence-trace.ts                 # req-id → tests/impl/verify トレース
+    ├── coherence-impact.test.ts           # impact単体テスト
+    ├── coherence-trace.ts                 # req-id → tests/impl/verify トレース
+    ├── coherence-trace.test.ts            # trace単体テスト
+    └── fixtures/                          # テスト用サンプルfrontmatter群
+        ├── valid-feature/                 # 完全に整合したサンプル
+        │   ├── specs/auth-flow.md
+        │   ├── specs/session-mgmt.md
+        │   └── expected-coherence.json    # snapshot基準
+        ├── cycle/                         # 循環依存サンプル
+        │   ├── specs/a.md
+        │   ├── specs/b.md
+        │   └── expected-issues.json
+        ├── missing-ref/                   # 不在ノード参照サンプル
+        │   ├── specs/orphan-spec.md
+        │   └── expected-issues.json
+        ├── orphan/                        # Orphanノード含むサンプル
+        │   ├── specs/root.md
+        │   ├── specs/orphan.md
+        │   └── expected-issues.json
+        └── incomplete-bead/               # 不完全bead サンプル
+            ├── specs/spec-only.md
+            └── expected-issues.json
 ```
 
 ### 2. SKILL.md 章構成
@@ -367,19 +391,34 @@ Step 3: references/ 3ファイル作成
   - references/strict-vs-lean.md (~80行)
   - references/trace-templates.md (~60行)
 
-Step 4: scripts/ 6ファイル作成
-  - scripts/_types.ts
-  - scripts/_frontmatter.ts
-  - scripts/coherence-scan.ts
-  - scripts/coherence-validate.ts
-  - scripts/coherence-impact.ts
-  - scripts/coherence-trace.ts
+Step 4: scripts/ 本体 6ファイル + fixtures + テスト 5ファイル作成
+  本体:
+    - scripts/_types.ts
+    - scripts/_frontmatter.ts
+    - scripts/coherence-scan.ts
+    - scripts/coherence-validate.ts
+    - scripts/coherence-impact.ts
+    - scripts/coherence-trace.ts
+  テスト（TDD: 先にfixture+test → 本体実装）:
+    - scripts/_frontmatter.test.ts
+    - scripts/coherence-scan.test.ts
+    - scripts/coherence-validate.test.ts
+    - scripts/coherence-impact.test.ts
+    - scripts/coherence-trace.test.ts
+  fixtures:
+    - scripts/fixtures/valid-feature/{specs/*.md, expected-coherence.json}
+    - scripts/fixtures/cycle/{specs/{a,b}.md, expected-issues.json}
+    - scripts/fixtures/missing-ref/{specs/orphan-spec.md, expected-issues.json}
+    - scripts/fixtures/orphan/{specs/{root,orphan}.md, expected-issues.json}
+    - scripts/fixtures/incomplete-bead/{specs/spec-only.md, expected-issues.json}
 
-Step 5: 手動E2Eテスト
-  - サンプル機能を作成: docs/vcsdd/example-feature/specs/*.md
-  - 4スクリプトを順次実行
-  - coherence.json生成 → validate → impact → trace
-  - 期待出力との一致を目視確認
+Step 5: 自動テスト + 手動E2Eテスト
+  自動:
+    - deno test --allow-read claude/skills/vcsdd-lite/scripts/ → 全pass
+    - coverage 80%以上を確認
+  手動E2E（自動テスト通過後）:
+    - サンプル機能 docs/vcsdd/example-feature/specs/*.md を作成
+    - 4スクリプトを順次実行し目視確認
 
 Step 6: ドキュメント更新（任意）
   - CLAUDE.md の Skills セクションに /vcsdd-lite を追記
@@ -416,8 +455,10 @@ fi
 | `vcsdd-lite` がスキル一覧に出現 | Claude Code起動時のスキルリスト |
 | 起動トリガー有効 | "VCSDDで開発" "coherenceチェック" |
 | Phase 1c が SKILL.md にある | grep "Coherence Mapping" SKILL.md |
-| 4スクリプトが実行可能 | `deno check scripts/*.ts` |
-| サンプルfeature E2E成功 | scan→validate→impact→trace 全成功 |
+| 4スクリプト + 2ヘルパーが型チェック通過 | `deno check scripts/*.ts` |
+| **全自動テスト pass** | `deno test --allow-read scripts/` exit 0 |
+| **カバレッジ 80% 以上** | `deno coverage coverage` 結果 |
+| サンプルfeature 手動E2E成功 | scan→validate→impact→trace 全成功 |
 | 旧vsddディレクトリ削除 | `ls claude/skills/vsdd` で no such file |
 | git履歴追跡可能 | `git log --follow` でVSDD時代まで辿れる |
 
@@ -432,20 +473,63 @@ fi
 
 ## テスト戦略
 
-### 単体テスト（手動）
+### フレームワーク選定
 
-各スクリプトに対する最小E2E：
-1. サンプル `docs/vcsdd/test-feature/specs/sample.md` 作成
-2. `coherence-scan.ts --feature test-feature` 実行 → `coherence.json` 生成確認
-3. `coherence-validate.ts --feature test-feature` 実行 → exit code 0 確認
-4. `coherence-impact.ts --feature test-feature --node spec:sample` 実行 → JSON出力確認
-5. `coherence-trace.ts --feature test-feature --req req:sample` 実行 → markdown出力確認
+**Deno標準テストランナー**（`Deno.test()`）を採用。理由：
+- ゼロ依存（`deno test` のみで実行可能）
+- スナップショットテスト: `jsr:@std/testing/snapshot`
+- アサーション: `jsr:@std/assert`
+- ファイル配置は **コロケーション**（writing-tests スキルの方針に準拠）
 
-### 異常系テスト
+### テストファイル配置
 
-- 循環依存を含むサンプルで `coherence-validate.ts` が `cycle` エラーを返すこと
-- 存在しないノード参照を含むサンプルで `missing_reference` エラーを返すこと
-- frontmatter欠落ファイルでscanが警告し、該当ファイルをスキップすること
+```
+scripts/<script>.ts          # 本体
+scripts/<script>.test.ts     # 同階層のテスト
+scripts/fixtures/<scenario>/ # サンプル frontmatter + 期待結果
+```
+
+### 各スクリプトのテスト項目
+
+| スクリプト | テストケース | カバレッジ重点 |
+|---|---|---|
+| `_frontmatter.test.ts` | YAML parse 正常系 / frontmatter無しファイル / 不正YAML / type欠落 / 必須フィールド欠落 / 大ファイル（1000行） | パースエッジケース |
+| `coherence-scan.test.ts` | valid-feature fixture → expected-coherence.json と一致（snapshot） / 重複ID検出 / type別ノード集計 / confidence自動算出 / `--dry-run` モード | 主要パス + 例外系 |
+| `coherence-validate.test.ts` | cycle検出（A→B→A、A→B→C→A） / missing_reference / orphan / type_mismatch / incomplete_bead / gray_in_locked_spec / `--strict` モード | 全 issue kind 網羅 |
+| `coherence-impact.test.ts` | depth=1/2/N の階層出力 / BFS順序保証 / 不在ノード指定エラー / 自己ループ無視 / `--format md` 出力 | グラフ走査 |
+| `coherence-trace.test.ts` | 完全トレース成立 / 欠落次元検出 / `--bead` モード / req未指定エラー | トレース完全性 |
+
+### カバレッジ目標
+
+writing-tests スキルのリスクレベル基準に従う。本スクリプトは「開発支援ツール」のため **中リスク** 扱い → **80%以上**。
+
+### テスト実行コマンド
+
+```bash
+# 全テスト実行（プロジェクトルートから、or claude/skills/vcsdd-lite/scripts/ から）
+deno test --allow-read claude/skills/vcsdd-lite/scripts/
+
+# カバレッジ取得
+deno test --allow-read --coverage=coverage claude/skills/vcsdd-lite/scripts/
+deno coverage coverage
+
+# 単一テスト実行
+deno test --allow-read claude/skills/vcsdd-lite/scripts/coherence-validate.test.ts
+```
+
+### CI 統合（任意）
+
+個人 dotfiles のためローカル `deno test` で十分。GitHub Actions に追加する場合は `.github/workflows/test-vcsdd-lite.yml` を別途検討。
+
+### 手動E2Eテスト（補助）
+
+自動テスト通過後、現実のフィーチャー想定で1回だけ手動確認：
+
+1. サンプル `docs/vcsdd/example-feature/specs/*.md` 作成
+2. 4スクリプトを順次実行し、目視で出力を確認
+3. 既存 `references/coherence.md` の例と一致するか確認
+
+これは **設計書通りの動作が現実的に使えるか** の最終確認であり、自動テストの代替ではない。
 
 ## 関連スキル
 
