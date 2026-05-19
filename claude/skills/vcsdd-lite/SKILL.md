@@ -133,7 +133,46 @@ Builderが以下を含む仕様書を作成：
 **プロパティ仕様の草案**:
 - 可能な範囲でKaniハーネス、Dafny契約、TLA+不変条件を仕様と並行して記述
 
-#### 1c: 仕様レビューゲート
+#### 1c: Coherence Mapping（CoDD核心）
+
+**仕様・テスト・実装・検証の依存関係をCEGに登録する。**
+
+##### frontmatter の必須化
+
+`docs/vcsdd/<feature>/specs/*.md` の冒頭に必ず以下のfrontmatterを付与：
+
+```yaml
+---
+id: spec:<slug>
+type: spec
+feature: <feature-name>
+coherence:
+  depends_on: [...]   # 上流ノード
+  satisfies: [...]    # 満たす要件
+  verified_by: [...]  # 検証するtest/verify
+  beads: [...]        # トレース束
+---
+```
+
+詳細は **references/coherence.md** を参照。
+
+##### CEG構築
+
+```bash
+deno run --allow-read --allow-write \
+  ~/.claude/skills/vcsdd-lite/scripts/coherence-scan.ts --feature <feature>
+```
+
+`docs/vcsdd/<feature>/coherence.json` が生成される。
+
+##### Phase 1c 完了条件
+
+- 全 spec ファイルに frontmatter が付与されている
+- `coherence-scan.ts` が成功（エラーなく完了）
+- `coherence-validate.ts` の verdict が `pass` または errors=0 のみ
+- 信頼度バンドの green が全 spec の80%以上
+
+#### 1d: 仕様レビューゲート
 
 振る舞い仕様 + 検証アーキテクチャの**両方**を人間とAdversaryがレビュー。
 
