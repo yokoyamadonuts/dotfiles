@@ -320,6 +320,25 @@ developing (親スキル: TDDワークフロー全体)
 2. Define triggers, workflow, and expected output
 3. Run `cd claude && ./install.sh` to deploy
 
+### Per-Skill Memory (`.memory.md`)
+
+各スキルは任意の `claude/skills/<name>/.memory.md`（gitignore・私的）に「そのスキル固有の運用知識」を蓄積する。MUSE-Autoskill の per-skill メモリをこの repo に適用したもの。
+
+**読み込み（自動）**: `skill-memory.ts` フックがスキル使用時に該当 `.memory.md` を自動注入する。手動操作は不要。
+
+**書き込み（規約・あなたの判断）**: スキル使用後、そのスキル**固有の**以下を見つけたら `.memory.md` に日付付きで追記する（テンプレ: `claude/skills/shared/references/memory-template.md`）:
+- スキルが失敗し、原因と回避策を特定した（→ Failure Modes）
+- 入力に特別な前処理が必要だった（→ Input Quirks）
+- 非自明なより良い使い方を見つけた（→ Tips）
+
+記録しない: 一度きりの些末事、スキルと無関係な一般知識。
+
+**agent-memory との境界**:
+- *スキル自身の挙動・癖* → `.memory.md`（例: 「pptx は macOS でフォント埋込が落ちる」）
+- *問題・ドメイン・プロジェクト知識* → `agent-memory`（例: 「Issue #123 の JWT 調査結果」）
+
+**昇格（手動）**: `.memory.md` の `Promotion Candidates` が複数タスクで再現し普遍的と確認できたら、`claude/skills/<name>/references/lessons.md`（committed）へ移し、`.memory.md` からは削除する。SKILL.md 本体には足さない（`reviewing-skills` の 500 行制限を圧迫しないため）。
+
 ## Plan Mode Best Practice
 
 Follow the 80/20 rule:
