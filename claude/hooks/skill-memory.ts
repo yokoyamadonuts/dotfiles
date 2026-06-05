@@ -24,3 +24,52 @@ export function truncate(text: string, maxLines: number, path: string): string {
   return lines.slice(0, maxLines).join("\n") +
     `\n\n(truncated; full memory at ${path})`;
 }
+
+export type LoadDeps = {
+  home?: string;
+  readTextFile?: (path: string | URL) => Promise<string>;
+};
+
+/**
+ * Load and format a skill's private memory for context injection.
+ * Fails open: returns `null` when the skill is plugin-namespaced, has no
+ * memory file, the file is empty, or any read error occurs.
+ */
+export async function loadMemoryContext(
+  skill: string,
+  deps: LoadDeps = {},
+): Promise<string | null> {
+  const home = deps.home ?? Deno.env.get("HOME") ?? "";
+  const readTextFile = deps.readTextFile ?? Deno.readTextFile;
+  if (!home) {
+    return null;
+  }
+  const path = memoryPath(skill, home);
+  if (!path) {
+    return null;
+  }
+  try {
+    const raw = await readTextFile(path);
+    if (!raw.trim()) {
+      return null;
+    }
+    const body = truncate(raw, MAX_INJECT_LINES, path);
+    return `# Skill memory: ${skill}\n\n` +
+      `Private, per-machine notes for the "${skill}" skill. ` +
+      `Apply any relevant failure modes / input quirks below before proceeding.\n\n` +
+      body;
+  } catch {
+    return null; // fail open: missing file, permission error, etc.
+  }
+}
+
+/** Build the PostToolUse JSON that injects `context` next to the tool result. */
+export function buildOutput(context: string): string {
+  return JSON.stringify({
+    hookSpecificOutput: {
+      hookEventName: "PostToolUse",
+      additionalContext: context,
+    },
+    suppressOutput: true,
+  });
+}

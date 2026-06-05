@@ -140,3 +140,9 @@ export function isMultiEditToolResponse(
 
 // Generic tool params type for other tools
 export type ToolParams = FileModificationToolParams | Record<string, unknown>;
+
+// Skill tool parameters (used by the skill-memory PostToolUse hook)
+export type SkillToolParams = {
+  skill: string;
+  args?: string;
+};
