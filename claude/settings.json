@@ -42,6 +42,15 @@
             "command": "deno run --allow-env --allow-run --allow-read --allow-write $GHQ_ROOT/github.com/skanehira/dotfiles/claude/hooks/format.ts"
           }
         ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "deno run --allow-env --allow-read $GHQ_ROOT/github.com/skanehira/dotfiles/claude/hooks/skill-memory.ts"
+          }
+        ]
       }
     ]
   },
