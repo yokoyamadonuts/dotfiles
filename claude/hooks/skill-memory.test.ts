@@ -193,3 +193,21 @@ Deno.test("integration: malformed stdin fails open (exit 0, no stdout)", async (
   assertEquals(code, 0);
   assertEquals(new TextDecoder().decode(stdout).trim(), "");
 });
+
+Deno.test("memoryPath: rejects path traversal and separators", () => {
+  assertEquals(memoryPath("../../secret", "/home/u"), null);
+  assertEquals(memoryPath("a/b", "/home/u"), null);
+  assertEquals(memoryPath("..", "/home/u"), null);
+  assertEquals(memoryPath("a\\b", "/home/u"), null);
+});
+
+Deno.test("handle: non-string skill fails open (null)", async () => {
+  const out = await handle(
+    {
+      tool_name: "Skill",
+      tool_input: { skill: 123 },
+    } as unknown as Parameters<typeof handle>[0],
+    { home: "/home/u", readTextFile: () => Promise.resolve("x") },
+  );
+  assertEquals(out, null);
+});

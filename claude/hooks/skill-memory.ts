@@ -10,7 +10,12 @@ export const MAX_INJECT_LINES = 200;
  * names — those are not managed by this dotfiles repo.
  */
 export function memoryPath(skill: string, home: string): string | null {
-  if (!skill || skill.includes(":")) {
+  // Reject plugin-namespaced names (":") and any path-y name that could escape
+  // the ~/.claude/skills/<skill>/ sandbox (separators, "." / ".." segments).
+  if (
+    !skill || skill.includes(":") || skill.includes("/") ||
+    skill.includes("\\") || skill === "." || skill === ".."
+  ) {
     return null;
   }
   return join(home, ".claude", "skills", skill, ".memory.md");
@@ -89,7 +94,7 @@ export async function handle(
     return null;
   }
   const skill = data.tool_input?.skill;
-  if (!skill) {
+  if (typeof skill !== "string" || !skill) {
     return null;
   }
   const context = await loadMemoryContext(skill, deps);
