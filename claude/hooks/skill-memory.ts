@@ -1,4 +1,5 @@
 import { join } from "jsr:@std/path";
+import type { PostToolUseHookData, SkillToolParams } from "./types.ts";
 
 /** Max lines of a .memory.md to inject before truncating (context budget guard). */
 export const MAX_INJECT_LINES = 200;
@@ -72,4 +73,43 @@ export function buildOutput(context: string): string {
     },
     suppressOutput: true,
   });
+}
+
+/**
+ * Core request handler. Returns the JSON string to print to stdout, or `null`
+ * when nothing should be emitted (non-Skill tool, no skill name, no memory).
+ */
+export async function handle(
+  data: Partial<PostToolUseHookData<SkillToolParams>>,
+  deps: LoadDeps = {},
+): Promise<string | null> {
+  // `data` may be runtime-null (stdin can be the literal JSON `null`); the `?.`
+  // guards keep this fail-open even though the static type isn't nullable.
+  if (data?.tool_name !== "Skill") {
+    return null;
+  }
+  const skill = data.tool_input?.skill;
+  if (!skill) {
+    return null;
+  }
+  const context = await loadMemoryContext(skill, deps);
+  return context ? buildOutput(context) : null;
+}
+
+async function main(): Promise<void> {
+  try {
+    const data = await new Response(Deno.stdin.readable).json();
+    const out = await handle(data);
+    if (out) {
+      console.log(out); // stdout MUST be JSON only — never log human text here
+    }
+  } catch (error) {
+    // Fail open: never break skill use. Log to stderr (no --allow-write needed).
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`skill-memory hook error: ${message}`);
+  }
+}
+
+if (import.meta.main) {
+  await main();
 }
