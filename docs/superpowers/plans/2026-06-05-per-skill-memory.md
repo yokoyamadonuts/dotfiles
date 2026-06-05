@@ -61,6 +61,11 @@ Deno.test("truncate: text within limit is unchanged", () => {
   assertEquals(truncate("a\nb\nc", MAX_INJECT_LINES, "/p/.memory.md"), "a\nb\nc");
 });
 
+Deno.test("truncate: text at the line limit is unchanged", () => {
+  const atLimit = Array.from({ length: MAX_INJECT_LINES }, (_, i) => `L${i}`).join("\n");
+  assertEquals(truncate(atLimit, MAX_INJECT_LINES, "/p/.memory.md"), atLimit);
+});
+
 Deno.test("truncate: oversized text is capped with a marker", () => {
   const text = Array.from({ length: 250 }, (_, i) => `L${i}`).join("\n");
   const out = truncate(text, MAX_INJECT_LINES, "/p/.memory.md");
@@ -104,14 +109,15 @@ export function truncate(text: string, maxLines: number, path: string): string {
   if (lines.length <= maxLines) {
     return text;
   }
-  return `${lines.slice(0, maxLines).join("\n")}\n\n(truncated; full memory at ${path})`;
+  return lines.slice(0, maxLines).join("\n") +
+    `\n\n(truncated; full memory at ${path})`;
 }
 ```
 
 - [ ] **Step 4: テストが通ることを確認**
 
 Run: `deno test claude/hooks/skill-memory.test.ts`
-Expected: PASS（5 tests passed）
+Expected: PASS（6 tests passed）
 
 - [ ] **Step 5: フォーマット & コミット**
 
@@ -265,7 +271,7 @@ export function buildOutput(context: string): string {
 - [ ] **Step 5: テストが通ることを確認**
 
 Run: `deno test claude/hooks/skill-memory.test.ts`
-Expected: PASS（10 tests passed）
+Expected: PASS（11 tests passed）
 
 - [ ] **Step 6: 型チェック & フォーマット & コミット**
 
@@ -390,6 +396,11 @@ Deno.test("integration: malformed stdin fails open (exit 0, no stdout)", async (
   assertEquals(code, 0);
   assertEquals(new TextDecoder().decode(stdout).trim(), "");
 });
+
+Deno.test("handle: null data (JSON `null` stdin) fails open (null)", async () => {
+  const out = await handle(null as unknown as Parameters<typeof handle>[0]);
+  assertEquals(out, null);
+});
 ```
 
 - [ ] **Step 2: テストが失敗することを確認**
@@ -416,6 +427,8 @@ export async function handle(
   data: Partial<PostToolUseHookData<SkillToolParams>>,
   deps: LoadDeps = {},
 ): Promise<string | null> {
+  // `data` may be runtime-null (stdin can be the literal JSON `null`); the `?.`
+  // guards keep this fail-open even though the static type isn't nullable.
   if (data?.tool_name !== "Skill") {
     return null;
   }
@@ -456,7 +469,7 @@ import type { PostToolUseHookData, SkillToolParams } from "./types.ts";
 - [ ] **Step 4: テストが通ることを確認**
 
 Run: `deno test --allow-run --allow-read --allow-write --allow-env claude/hooks/skill-memory.test.ts`
-Expected: PASS（15 tests passed）
+Expected: PASS（17 tests passed）
 
 - [ ] **Step 5: 型チェック & lint & フォーマット**
 
@@ -694,7 +707,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - [ ] **Step 1: 全テスト通過を確認**
 
 Run: `deno test --allow-run --allow-read --allow-write --allow-env claude/hooks/skill-memory.test.ts`
-Expected: PASS（15 tests passed）
+Expected: PASS（17 tests passed）
 
 - [ ] **Step 2: 型 & lint & フォーマット確認**
 
