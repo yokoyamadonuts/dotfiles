@@ -469,7 +469,7 @@ import type { PostToolUseHookData, SkillToolParams } from "./types.ts";
 - [ ] **Step 4: テストが通ることを確認**
 
 Run: `deno test --allow-run --allow-read --allow-write --allow-env claude/hooks/skill-memory.test.ts`
-Expected: PASS（17 tests passed）
+Expected: PASS（19 tests passed）
 
 - [ ] **Step 5: 型チェック & lint & フォーマット**
 
@@ -707,7 +707,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - [ ] **Step 1: 全テスト通過を確認**
 
 Run: `deno test --allow-run --allow-read --allow-write --allow-env claude/hooks/skill-memory.test.ts`
-Expected: PASS（17 tests passed）
+Expected: PASS（19 tests passed）
 
 - [ ] **Step 2: 型 & lint & フォーマット確認**
 
@@ -761,3 +761,14 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 **3. Type consistency:** `memoryPath(skill, home)`, `truncate(text, maxLines, path)`, `loadMemoryContext(skill, deps)`, `buildOutput(context)`, `handle(data, deps)`, `SkillToolParams`, `MAX_INJECT_LINES`, `LoadDeps` — 全タスク間でシグネチャ一貫。`PostToolUseHookData<SkillToolParams>` の参照も types.ts の追加と一致。
 
 > 実装上の小注意（Task 3）: テストファイル冒頭の import に `import { join } from "jsr:@std/path";` を必ず追加すること（integration テストで `join` を使用）。`deno fmt` が import 並びを整える。
+
+---
+
+## Post-Review Hardening（最終ホリスティックレビュー由来 / Task 8）
+
+実装全体の最終コードレビュー（opus）で、per-task レビューが見逃した入力検証ギャップを2件検出し、堅牢化した。いずれも Claude Code の Skill ツールが skill 名を enum 制約するため現状到達不能だが、多層防御として実施。
+
+- **パストラバーサル防御**: `memoryPath` が `:` に加え `/`・`\`・`.`・`..` を含む skill 名を `null` 化。`join` による `..` 正規化で `~/.claude/skills/` サンドボックス外のファイルを読む脱出を防ぐ。
+- **非文字列 skill の fail-open**: `handle` が `typeof skill !== "string"` を弾く。数値等が `memoryPath` の `.includes` に渡って `TypeError` を投げ `handle` 自身の fail-open 契約を破るのを防止。
+- テスト2件追加（計 **19**）。`fix(hooks): reject path-traversal and non-string skill names`。
+- 併せて `claude/hooks/README.md` に skill-memory フックの記載を追加（Minor）。

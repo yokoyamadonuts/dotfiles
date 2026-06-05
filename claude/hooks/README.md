@@ -6,6 +6,8 @@ This directory contains custom hooks for Claude Code to enhance the development 
 
 - `format.ts` - Automatically formats files after Claude Code writes or edits them
 - `notify.ts` - Sends desktop notifications for Claude Code events
+- `skill-memory.ts` - Injects a skill's private `.memory.md` into context when that skill is used
+- `skill-memory.test.ts` - Tests for the skill-memory hook
 - `types.ts` - TypeScript type definitions for Claude Code hook data structures
 
 ## Type Definitions
@@ -65,3 +67,7 @@ The format hook runs after Write, Edit, or MultiEdit operations and automaticall
 The notify hook sends desktop notifications when:
 - Claude Code stops execution (`Stop` event)
 - Claude Code needs user attention (`Notification` event)
+
+### Skill Memory Hook
+
+The skill-memory hook runs after the `Skill` tool is used. It reads the invoked skill's private `.memory.md` (at `~/.claude/skills/<name>/.memory.md`, gitignored) and injects it into context via `additionalContext`, so accumulated failure modes and input quirks for that skill surface before it runs. It fails open (missing file, plugin-namespaced skill, or any error → no-op) and runs read-only (`--allow-env --allow-read`). See `CLAUDE.md` → "Per-Skill Memory" for the write convention and the `references/lessons.md` promotion path.
