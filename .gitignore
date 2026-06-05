@@ -1,1 +1,4 @@
 .DS_Store
+
+# per-skill メモリは私的な作業領域として除外（普遍的教訓は references/lessons.md へ昇格）
+claude/skills/*/.memory.md
