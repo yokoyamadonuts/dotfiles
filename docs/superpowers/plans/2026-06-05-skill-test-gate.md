@@ -636,7 +636,7 @@ export async function validateSkill(
 - [ ] **Step 5: Run tests to verify they pass**
 
 Run: `deno test --allow-read --allow-run --allow-write --allow-env claude/skills/reviewing-skills/scripts/validate-skill.test.ts`
-Expected: PASS（29 tests passed）
+Expected: PASS（30 tests passed） (29 from plan + 1 combined-failure test added in review)
 
 - [ ] **Step 6: Type-check, format, commit**
 
@@ -812,7 +812,7 @@ if (import.meta.main) {
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `deno test --allow-read --allow-run --allow-write --allow-env claude/skills/reviewing-skills/scripts/validate-skill.test.ts`
-Expected: PASS（32 tests passed）
+Expected: PASS（36 tests passed）
 
 - [ ] **Step 5: Smoke-test the CLI against the real repo**
 
@@ -930,7 +930,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - [ ] **Step 1: Full validator test suite**
 
 Run: `deno test --allow-read --allow-run --allow-write --allow-env claude/skills/reviewing-skills/scripts/validate-skill.test.ts`
-Expected: PASS（32 tests passed）
+Expected: PASS（36 tests passed）
 
 - [ ] **Step 2: Quality gates**
 
@@ -977,7 +977,7 @@ Report PASS/FAIL per criterion.
 ## Self-Review (plan author)
 
 - **Spec coverage**: Tier-1 (§4)→T2/T3; Tier-2 (§5)→T4; location/boundary (§6)→T4 path + T6 docs; create-skill integration (§7)→T6; CLI/I-O (§8)→T5; fail-closed (§9)→T5 `main` try/catch + Tier-2 C4; testing/fixtures (§10)→T1-T5; file inventory (§11)→all; scope (§12) respected (no git hook, no --json, no LLM eval); AC (§13)→T7. All covered.
-- **Test counts** are cumulative: T1=4, T2=16, T3=22, T4=29, T5=32. These are the expected `deno test` totals after each task.
+- **Test counts** are cumulative: T1=4, T2=16, T3=22, T4=30, T5=36. (Review added: T4 +1 combined-failure test; T5 +3 — path-traversal guard, fixtures-ignore regression, exact-arg-count.) These are the expected `deno test` totals after each task.
 - **Permissions**: validator runs with `--allow-read --allow-run --allow-env`; Tier-2 spawns `deno test -A` (trusted local skill code). Stated in T4 and §9.
 - **DI for testability**: `validateSkill` takes `ValidateDeps` (readTextFile/hasTests/runTests) so Tier-1+gate logic is unit-tested without FS/subprocess; `defaultRunTests`/`defaultHasTests`/CLI are covered by fixture + subprocess tests. `VALIDATE_SKILLS_DIR` env override makes `--all` testable against temp dirs.
 - **Open items (spec §15) resolved here**: skills dir = env override else import.meta.url; Tier-2 perms = `-A`; output format = `<skill>: PASS|FAIL` + `  [Severity] check: detail`; `--all` prints one result block per skill.
