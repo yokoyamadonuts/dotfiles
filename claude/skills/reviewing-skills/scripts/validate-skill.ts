@@ -126,3 +126,41 @@ export function parseFrontmatter(content: string): ParseResult {
     body: content.slice(match[0].length),
   };
 }
+
+export type SkillResult = {
+  skill: string;
+  violations: Violation[];
+  scriptTests: { ran: boolean; passed: boolean; output: string };
+};
+
+/** Tier-1 orchestration: parse, then run all field checks. */
+export function validateContent(content: string): Violation[] {
+  const parsed = parseFrontmatter(content);
+  if (!parsed.ok) {
+    return [{
+      severity: "Critical",
+      check: "C1 frontmatter",
+      detail: parsed.error,
+    }];
+  }
+  return [
+    ...checkName(parsed.frontmatter.name),
+    ...checkDescription(parsed.frontmatter.description),
+    ...checkBody(parsed.body),
+  ];
+}
+
+/** The gate blocks only on Critical violations; Warnings are advisory. */
+export function hasCritical(violations: Violation[]): boolean {
+  return violations.some((x) => x.severity === "Critical");
+}
+
+/** Human-readable, auto-fix-loop-parseable result line(s). */
+export function formatResult(r: SkillResult): string {
+  const status = hasCritical(r.violations) ? "FAIL" : "PASS";
+  const lines = [`${r.skill}: ${status}`];
+  for (const x of r.violations) {
+    lines.push(`  [${x.severity}] ${x.check}: ${x.detail}`);
+  }
+  return lines.join("\n");
+}

@@ -3,7 +3,10 @@ import {
   checkBody,
   checkDescription,
   checkName,
+  formatResult,
+  hasCritical,
   parseFrontmatter,
+  validateContent,
 } from "./validate-skill.ts";
 
 Deno.test("parseFrontmatter: extracts object frontmatter and body", () => {
@@ -89,4 +92,62 @@ Deno.test("checkBody: over 500 lines is Warning", () => {
 Deno.test("checkBody: 'When to Use' heading is Warning", () => {
   const v = checkBody("# Skill\n## When to Use This Skill\ntext");
   assertEquals(v.some((x) => x.check.startsWith("W3")), true);
+});
+
+const VALID_SKILL =
+  "---\nname: demo-skill\ndescription: Does a demo. Use when demoing.\n---\n# Demo\nsteps here";
+
+Deno.test("validateContent: valid skill has no violations", () => {
+  assertEquals(validateContent(VALID_SKILL), []);
+});
+
+Deno.test("validateContent: no frontmatter => single C1 Critical", () => {
+  const v = validateContent("# just a body");
+  assertEquals(v.length, 1);
+  assertEquals(v[0].check.startsWith("C1"), true);
+});
+
+Deno.test("validateContent: aggregates name + description violations", () => {
+  const v = validateContent("---\nname: Bad_Name\ndescription: ''\n---\nbody");
+  assertEquals(v.some((x) => x.check.startsWith("C2")), true);
+  assertEquals(v.some((x) => x.check.startsWith("C3")), true);
+});
+
+Deno.test("hasCritical: true only when a Critical exists", () => {
+  assertEquals(
+    hasCritical([{ severity: "Warning", check: "W1 body", detail: "x" }]),
+    false,
+  );
+  assertEquals(
+    hasCritical([{ severity: "Critical", check: "C1", detail: "x" }]),
+    true,
+  );
+  assertEquals(hasCritical([]), false);
+});
+
+Deno.test("formatResult: PASS with no critical, lists violations", () => {
+  const out = formatResult({
+    skill: "demo",
+    violations: [{
+      severity: "Warning",
+      check: "W1 body",
+      detail: "612 lines (>500)",
+    }],
+    scriptTests: { ran: false, passed: true, output: "" },
+  });
+  assertEquals(out.includes("demo: PASS"), true);
+  assertEquals(out.includes("[Warning] W1 body: 612 lines (>500)"), true);
+});
+
+Deno.test("formatResult: FAIL when a Critical exists", () => {
+  const out = formatResult({
+    skill: "demo",
+    violations: [{
+      severity: "Critical",
+      check: "C1 frontmatter",
+      detail: "no YAML frontmatter block found",
+    }],
+    scriptTests: { ran: false, passed: true, output: "" },
+  });
+  assertEquals(out.includes("demo: FAIL"), true);
 });
