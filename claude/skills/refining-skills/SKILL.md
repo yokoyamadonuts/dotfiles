@@ -38,6 +38,10 @@ description: 既存スキルを経験駆動で改善する。validate-skill の�
 3. 昇格済み教訓を読む: `claude/skills/<name>/references/lessons.md`（存在すれば）。
    → 重複昇格を避ける。
 
+> **パス注意**: `~/.claude/skills` は `claude/skills` へのシンボリックリンク（同一ファイル）。ただし git worktree で作業中は `~/.claude/skills` が**メインチェックアウト**を指すため、メモリ読込もスキル編集・昇格も**対象の作業ツリー**側 `claude/skills/<name>/` に統一して行うこと（読み元と書き先がズレないように）。
+
+（`.memory.md` のセクション名 — Failure Modes / Input Quirks / Tips / Promotion Candidates — は `claude/skills/shared/references/memory-template.md` に準拠する。）
+
 **シグナルが皆無**（validate clean かつ .memory.md 不在）なら「このスキルに改善点はありません」と報告して**終了**（何も編集しない）。
 
 ### ② Diagnose（診断）
@@ -60,6 +64,8 @@ description: 既存スキルを経験駆動で改善する。validate-skill の�
 ### ④ Re-validate（再検証）
 
 `validate-skill <name>` を再実行。**新規 Critical が無く、Warning が解消または正当化**されるまで ②〜④ を**最大 3 回**。収束しなければ報告して停止。
+
+Warning を**意図的に許容**する場合（例: 正当な理由で body>500行）、その理由を対象スキルの `references/lessons.md`（または SKILL.md の短い注記）に記録し、以後の refine 実行が同じ Warning を再指摘しても「正当化済み」と扱えるようにする。
 
 ### ⑤ Promote（昇格）
 
