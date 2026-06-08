@@ -125,6 +125,20 @@ Skill({
 
 ---
 
+## [2.5/3] 決定論ゲート（validate-skill）
+
+reviewing-skills（定性レビュー）の前に、決定論的なテストゲートを実行する。
+
+```bash
+deno run --allow-read --allow-run --allow-env \
+  $HOME/.claude/skills/reviewing-skills/scripts/validate-skill.ts <スキル名>
+```
+
+- **Critical あり（exit 1）**: 出力された違反（`[Critical] C2 name: ...` 等）を [3/3] の自動修正ループ（最大3回）に渡して修正し、再実行する。Critical が無くなるまで先に進まない（fail-closed）。
+- **Critical 無し（exit 0）**: Warning は記録しつつ [3/3] のレビューへ進む。
+
+---
+
 ## [3/3] レビューと自動修正
 
 ### TodoWrite更新

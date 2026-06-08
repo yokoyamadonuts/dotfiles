@@ -18,10 +18,13 @@ description: Claude Codeスキルを公式ベストプラクティスに基づ�
 
 ### ステップ2: 読み込みと分析
 
-1. 対象のSKILL.mdファイルを完全に読み込む
-2. [best-practices.md](references/best-practices.md) でチェックリストを確認
-3. YAMLフロントマター（name, description）を解析
-4. ボディコンテンツの構造を分析
+1. **決定論ゲートを先に実行**（機械判定可能な項目を自動チェック）:
+   `deno run --allow-read --allow-run --allow-env scripts/validate-skill.ts <skill-name>`
+   Critical はここで確実に検出される。本スキルは残りの**定性的**項目に集中する。
+2. 対象のSKILL.mdファイルを完全に読み込む
+3. [best-practices.md](references/best-practices.md) でチェックリストを確認
+4. YAMLフロントマター（name, description）を解析
+5. ボディコンテンツの構造を分析
 
 ### ステップ3: ベストプラクティスとの照合
 

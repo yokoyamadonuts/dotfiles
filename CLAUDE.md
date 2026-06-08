@@ -304,6 +304,8 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 | AI生成コードの検証 | `/design-intent` | 作者の理解度確認 |
 | 出荷可否判断 | `/review` + `/design-intent` | 技術品質 + 設計意図の両面で判断 |
 
+**スキル品質の2層**: `validate-skill`（`reviewing-skills/scripts/`）は決定論的・実行可能なゲート（frontmatter・name・行数・scripts テスト）。`reviewing-skills` は LLM による定性レビュー（「何を/いつ」「例の質」「用語一貫性」）。`/create-skill` は前者をゲート、後者を品質レビューとして両方走らせる。テスト用 fixtures は `scripts/fixtures/` に置けばゲートの対象外になる。
+
 ### TDD系スキルの関係
 
 ```
