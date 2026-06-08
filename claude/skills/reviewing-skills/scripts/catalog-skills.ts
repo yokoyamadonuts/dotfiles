@@ -58,3 +58,28 @@ export function findOverlaps(
   }
   return out;
 }
+
+export type Recommend = "refine" | "ok";
+
+/** Count "- " bullets under the "## ... Failure Modes" heading (until the next "## "). */
+export function countFailureModes(memoryContent: string): number {
+  let inSection = false;
+  let count = 0;
+  for (const line of memoryContent.split("\n")) {
+    if (/^##\s/.test(line)) {
+      inSection = /failure modes/i.test(line);
+      continue;
+    }
+    if (inSection && /^\s*-\s+/.test(line)) count++;
+  }
+  return count;
+}
+
+/** Per-skill recommendation from validation + memory signals. */
+export function recommend(
+  criticals: number,
+  warnings: number,
+  failureModes: number,
+): Recommend {
+  return criticals > 0 || warnings > 0 || failureModes > 0 ? "refine" : "ok";
+}

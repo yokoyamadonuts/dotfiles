@@ -1,5 +1,10 @@
 import { assertEquals } from "jsr:@std/assert";
-import { extractKeywords, findOverlaps } from "./catalog-skills.ts";
+import {
+  countFailureModes,
+  extractKeywords,
+  findOverlaps,
+  recommend,
+} from "./catalog-skills.ts";
 
 Deno.test("extractKeywords: latin >=4 and katakana runs, minus stopwords", () => {
   const kw = extractKeywords(
@@ -36,4 +41,20 @@ Deno.test("findOverlaps: <2 shared not flagged", () => {
     { name: "b", keywords: ["design"] },
   ]);
   assertEquals(o.length, 0);
+});
+
+Deno.test("countFailureModes: counts bullets under the heading only", () => {
+  const mem = "## ⚠️ Failure Modes\n- a\n- b\n\n## 🔧 Input Quirks\n- c\n";
+  assertEquals(countFailureModes(mem), 2);
+});
+
+Deno.test("countFailureModes: zero when no Failure Modes section", () => {
+  assertEquals(countFailureModes("## Tips\n- x\n- y\n"), 0);
+});
+
+Deno.test("recommend: refine on any signal, ok otherwise", () => {
+  assertEquals(recommend(0, 0, 0), "ok");
+  assertEquals(recommend(0, 1, 0), "refine");
+  assertEquals(recommend(1, 0, 0), "refine");
+  assertEquals(recommend(0, 0, 3), "refine");
 });
