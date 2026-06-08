@@ -117,7 +117,9 @@ export type Overlap = { a: string; b: string; shared: string[] };
 /** Extract significant keywords: latin words >=4 chars + katakana runs >=3,
  *  lowercased, minus stopwords. Approximate by design (no morphological analysis). */
 export function extractKeywords(name: string, description: string): string[] {
-  const text = `${name} ${description}`.toLowerCase();
+  // Split hyphen/underscore in the NAME so kebab ids (design-intent) tokenize
+  // into component words; descriptions keep compounds (pull-request) intact.
+  const text = `${name.replace(/[-_]/g, " ")} ${description}`.toLowerCase();
   const latin = text.match(/[a-z][a-z0-9-]{3,}/g) ?? [];
   const katakana = text.match(/[゠-ヿ]{3,}/g) ?? [];
   const out = new Set<string>();
