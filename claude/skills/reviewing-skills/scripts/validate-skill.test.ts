@@ -1,4 +1,5 @@
 import { assertEquals } from "jsr:@std/assert";
+import { join } from "jsr:@std/path";
 import {
   checkBody,
   checkDescription,
@@ -7,6 +8,7 @@ import {
   defaultRunTests,
   formatResult,
   hasCritical,
+  listSkills,
   parseFrontmatter,
   validateContent,
   validateSkill,
@@ -212,4 +214,108 @@ Deno.test("validateSkill: bad content + failing scripts => C1 and C4", async () 
   });
   assertEquals(r.violations.some((x) => x.check.startsWith("C1")), true);
   assertEquals(r.violations.some((x) => x.check.startsWith("C4")), true);
+});
+
+const SCRIPT = new URL("./validate-skill.ts", import.meta.url).pathname;
+
+Deno.test("listSkills: lists dirs with SKILL.md, skips others, sorted", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    await Deno.mkdir(join(tmp, "beta"));
+    await Deno.writeTextFile(join(tmp, "beta", "SKILL.md"), "x");
+    await Deno.mkdir(join(tmp, "alpha"));
+    await Deno.writeTextFile(join(tmp, "alpha", "SKILL.md"), "x");
+    await Deno.mkdir(join(tmp, "shared")); // no SKILL.md -> skipped
+    assertEquals(await listSkills(tmp), ["alpha", "beta"]);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+async function runCli(args: string[], skillsDir: string) {
+  const { code, stdout } = await new Deno.Command("deno", {
+    args: [
+      "run",
+      "--allow-read",
+      "--allow-run",
+      "--allow-env",
+      SCRIPT,
+      ...args,
+    ],
+    env: { VALIDATE_SKILLS_DIR: skillsDir },
+    stdout: "piped",
+    stderr: "piped",
+  }).output();
+  return { code, out: new TextDecoder().decode(stdout) };
+}
+
+Deno.test("CLI: valid skill exits 0 with PASS", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    await Deno.mkdir(join(tmp, "good"));
+    await Deno.writeTextFile(join(tmp, "good", "SKILL.md"), VALID_SKILL);
+    const { code, out } = await runCli(["good"], tmp);
+    assertEquals(code, 0);
+    assertEquals(out.includes("good: PASS"), true);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("CLI: --all exits 1 when any skill has a Critical", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    await Deno.mkdir(join(tmp, "good"));
+    await Deno.writeTextFile(join(tmp, "good", "SKILL.md"), VALID_SKILL);
+    await Deno.mkdir(join(tmp, "bad"));
+    await Deno.writeTextFile(join(tmp, "bad", "SKILL.md"), "# no frontmatter");
+    const { code, out } = await runCli(["--all"], tmp);
+    assertEquals(code, 1);
+    assertEquals(out.includes("bad: FAIL"), true);
+    assertEquals(out.includes("good: PASS"), true);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("CLI: rejects path-traversal skill name (exit 2)", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    const { code } = await runCli(["../etc"], tmp);
+    assertEquals(code, 2);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("defaultRunTests: ignores *.test.ts under scripts/fixtures/", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    const scripts = join(tmp, "scripts");
+    await Deno.mkdir(join(scripts, "fixtures"), { recursive: true });
+    await Deno.writeTextFile(
+      join(scripts, "ok.test.ts"),
+      'import { assertEquals } from "jsr:@std/assert";\nDeno.test("ok", () => assertEquals(1, 1));\n',
+    );
+    await Deno.writeTextFile(
+      join(scripts, "fixtures", "bad.test.ts"),
+      'import { assertEquals } from "jsr:@std/assert";\nDeno.test("bad", () => assertEquals(1, 2));\n',
+    );
+    const r = await defaultRunTests(tmp);
+    assertEquals(r.passed, true); // the failing fixture test is excluded
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("CLI: extra positional args => usage error (exit 2)", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    await Deno.mkdir(join(tmp, "good"));
+    await Deno.writeTextFile(join(tmp, "good", "SKILL.md"), VALID_SKILL);
+    const { code } = await runCli(["good", "extra"], tmp);
+    assertEquals(code, 2);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
 });

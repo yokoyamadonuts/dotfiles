@@ -4,7 +4,7 @@
 // Used by /create-skill as a fail-closed gate; also runnable standalone (--all).
 
 import { parse as parseYaml } from "jsr:@std/yaml";
-import { join } from "jsr:@std/path";
+import { dirname, fromFileUrl, join } from "jsr:@std/path";
 
 export const MAX_BODY_LINES = 500;
 export const MAX_NAME_LEN = 64;
@@ -12,6 +12,7 @@ export const MAX_DESC_LEN = 1024;
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 const NAME_RE = /^[a-z0-9-]+$/;
+const SAFE_NAME_RE = /^[a-z0-9-]+$/;
 const RESERVED_WORDS = ["anthropic", "claude"];
 const VAGUE_NAMES = ["helper", "utils", "tools"];
 const WHEN_TO_USE_RE = /^#{1,6}\s+.*when to use/im;
@@ -192,7 +193,14 @@ export async function defaultRunTests(
   skillDir: string,
 ): Promise<{ passed: boolean; output: string }> {
   const { code, stdout, stderr } = await new Deno.Command("deno", {
-    args: ["test", "-A", join(skillDir, "scripts")],
+    args: [
+      "test",
+      "-A",
+      // scripts/fixtures/ holds validator test fixtures (incl. intentionally
+      // failing *.test.ts); exclude so they don't fail the host skill's gate.
+      `--ignore=${join(skillDir, "scripts", "fixtures")}`,
+      join(skillDir, "scripts"),
+    ],
     stdout: "piped",
     stderr: "piped",
   }).output();
@@ -229,4 +237,79 @@ export async function validateSkill(
     }
   }
   return { skill: skillName, violations, scriptTests };
+}
+
+/** Resolve the skills directory: env override (for tests) or relative to this file. */
+function skillsDir(): string {
+  const override = Deno.env.get("VALIDATE_SKILLS_DIR");
+  if (override) return override;
+  // this file lives at claude/skills/reviewing-skills/scripts/validate-skill.ts
+  return join(dirname(fromFileUrl(import.meta.url)), "..", "..");
+}
+
+/** List immediate subdirectories that contain a SKILL.md, sorted. */
+export async function listSkills(dir: string): Promise<string[]> {
+  const names: string[] = [];
+  for await (const entry of Deno.readDir(dir)) {
+    if (!entry.isDirectory) continue;
+    try {
+      await Deno.stat(join(dir, entry.name, "SKILL.md"));
+      names.push(entry.name);
+    } catch {
+      // no SKILL.md (e.g. shared/) -> skip
+    }
+  }
+  return names.sort();
+}
+
+/** Skill-name args must be a single flat kebab id (matches the C2 name rule).
+ *  Allowlist also blocks path traversal (/, \, ., .., whitespace) by construction. */
+function isSafeTarget(name: string): boolean {
+  return SAFE_NAME_RE.test(name);
+}
+
+/** Resolve validation targets, or print an error and exit(2). */
+async function resolveTargets(dir: string, arg: string): Promise<string[]> {
+  if (arg === "--all") return await listSkills(dir);
+  if (isSafeTarget(arg)) return [arg];
+  console.error(`invalid skill name: ${arg}`);
+  Deno.exit(2);
+}
+
+async function main(): Promise<void> {
+  const args = Deno.args;
+  if (args.length !== 1) {
+    console.error("usage: validate-skill <skill-name> | --all");
+    Deno.exit(2);
+  }
+  const dir = skillsDir();
+
+  let targets: string[];
+  try {
+    targets = await resolveTargets(dir, args[0]);
+  } catch (e) {
+    // fail-closed: cannot even enumerate targets (e.g. bad skills dir).
+    console.error(`error resolving targets: ${(e as Error).message}`);
+    Deno.exit(2);
+  }
+
+  let failed = 0;
+  for (const name of targets) {
+    try {
+      const result = await validateSkill(join(dir, name), name);
+      console.log(formatResult(result));
+      if (hasCritical(result.violations)) failed++;
+    } catch (e) {
+      // fail-closed: a skill we cannot validate counts as a failure.
+      console.log(
+        `${name}: FAIL\n  [Critical] E0 validate: ${(e as Error).message}`,
+      );
+      failed++;
+    }
+  }
+  Deno.exit(failed > 0 ? 1 : 0);
+}
+
+if (import.meta.main) {
+  await main();
 }
