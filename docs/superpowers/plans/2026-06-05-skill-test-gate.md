@@ -981,3 +981,16 @@ Report PASS/FAIL per criterion.
 - **Permissions**: validator runs with `--allow-read --allow-run --allow-env`; Tier-2 spawns `deno test -A` (trusted local skill code). Stated in T4 and §9.
 - **DI for testability**: `validateSkill` takes `ValidateDeps` (readTextFile/hasTests/runTests) so Tier-1+gate logic is unit-tested without FS/subprocess; `defaultRunTests`/`defaultHasTests`/CLI are covered by fixture + subprocess tests. `VALIDATE_SKILLS_DIR` env override makes `--all` testable against temp dirs.
 - **Open items (spec §15) resolved here**: skills dir = env override else import.meta.url; Tier-2 perms = `-A`; output format = `<skill>: PASS|FAIL` + `  [Severity] check: detail`; `--all` prints one result block per skill.
+
+---
+
+## Post-Review Hardening（最終ホリスティックレビュー由来 / T8）
+
+実装全体の最終コードレビュー（opus）の指摘を反映（**最終テスト数 = 37**）:
+
+- **Important — exit 2 の合成ギャップ**: 単一名パスで非kebab な名前は `checkName`(C2) より前に `isSafeTarget` が exit 2 を返し、出力が非パース・`/create-skill` の自動修正ループが対処不能だった。修正: ① `resolveTargets` が exit 2 前に `<name>: FAIL\n  [Critical] name: ...` をパース可能な形で stdout 出力。② `create-skill.md [2.5/3]` に exit 2＝ハードストップ（kebab で作り直す、ループ対象外）を明記。exit 1（修正可能 Critical→ループ）と exit 2（修正不能→停止）を区別。
+- **Minor — DRY**: 同一リテラルだった `NAME_RE` と `SAFE_NAME_RE` を `NAME_RE` に統合（desync 防止。arg allowlist と C2 名規則を意図的に同一に）。
+- **Minor — メッセージ**: `checkName` が型違い(`name: 123`)を「missing or empty」と誤報 → 「must be a string」と「missing or empty」に分離。
+- テスト +1（非kebab 名 → exit 2＋パース可能 FAIL）。`fix(skills): make invalid-name gate output parseable, document exit 2, dedup name regex`。
+
+レビューが確認した良好点: Tier-1 較正は実在37スキルで誤ブロック/誤通過なし、Tier-2 の `-A`＋入れ子/自己参照テスト実行は fixtures を対象に正しく終端、決定論 vs 定性の境界は重複・矛盾なし。
