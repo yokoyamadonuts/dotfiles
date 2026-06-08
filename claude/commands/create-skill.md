@@ -136,6 +136,7 @@ deno run --allow-read --allow-run --allow-env \
 
 - **Critical あり（exit 1）**: 出力された違反（`[Critical] C2 name: ...` 等）を [3/3] の自動修正ループ（最大3回）に渡して修正し、再実行する。Critical が無くなるまで先に進まない（fail-closed）。
 - **Critical 無し（exit 0）**: Warning は記録しつつ [3/3] のレビューへ進む。
+- **不正な呼び出し / 名前（exit 2）**: スキル名が kebab-case でない等。これは**ハードストップ**で、自動修正ループでは直せない。kebab-case の名前でスキルを作り直す（exit 1 のループ対象とは区別する）。
 
 ---
 

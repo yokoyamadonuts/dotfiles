@@ -12,7 +12,6 @@ export const MAX_DESC_LEN = 1024;
 
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
 const NAME_RE = /^[a-z0-9-]+$/;
-const SAFE_NAME_RE = /^[a-z0-9-]+$/;
 const RESERVED_WORDS = ["anthropic", "claude"];
 const VAGUE_NAMES = ["helper", "utils", "tools"];
 const WHEN_TO_USE_RE = /^#{1,6}\s+.*when to use/im;
@@ -26,7 +25,14 @@ export type ParseResult =
 
 /** C2: name must be a flat kebab/lowercase id, ≤64 chars, no reserved words. */
 export function checkName(name: unknown): Violation[] {
-  if (typeof name !== "string" || name.length === 0) {
+  if (typeof name !== "string") {
+    return [{
+      severity: "Critical",
+      check: "C2 name",
+      detail: "must be a string",
+    }];
+  }
+  if (name.length === 0) {
     return [{
       severity: "Critical",
       check: "C2 name",
@@ -262,17 +268,24 @@ export async function listSkills(dir: string): Promise<string[]> {
   return names.sort();
 }
 
-/** Skill-name args must be a single flat kebab id (matches the C2 name rule).
- *  Allowlist also blocks path traversal (/, \, ., .., whitespace) by construction. */
+/** Skill-name args must be a single flat kebab id — the SAME rule as the C2
+ *  name check (NAME_RE). This allowlist also blocks path traversal by construction. */
 function isSafeTarget(name: string): boolean {
-  return SAFE_NAME_RE.test(name);
+  return NAME_RE.test(name);
 }
 
 /** Resolve validation targets, or print an error and exit(2). */
 async function resolveTargets(dir: string, arg: string): Promise<string[]> {
   if (arg === "--all") return await listSkills(dir);
   if (isSafeTarget(arg)) return [arg];
-  console.error(`invalid skill name: ${arg}`);
+  // Invalid name is a hard stop (exit 2), not a fixable content Critical (exit 1):
+  // emit a parseable line so callers see WHY, but signal "do not loop".
+  console.log(
+    `${arg}: FAIL\n  [Critical] name: "${arg}" is not a valid skill name (must match ${NAME_RE.source})`,
+  );
+  console.error(
+    `invalid skill name: ${arg} (exit 2 = hard stop, not auto-fixable)`,
+  );
   Deno.exit(2);
 }
 

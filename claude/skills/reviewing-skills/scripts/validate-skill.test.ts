@@ -319,3 +319,14 @@ Deno.test("CLI: extra positional args => usage error (exit 2)", async () => {
     await Deno.remove(tmp, { recursive: true });
   }
 });
+
+Deno.test("CLI: invalid (non-kebab) name => exit 2 with parseable FAIL", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    const { code, out } = await runCli(["Bad_Name"], tmp);
+    assertEquals(code, 2);
+    assertEquals(out.includes("Bad_Name: FAIL"), true);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
