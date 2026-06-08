@@ -3,10 +3,13 @@ import {
   checkBody,
   checkDescription,
   checkName,
+  defaultHasTests,
+  defaultRunTests,
   formatResult,
   hasCritical,
   parseFrontmatter,
   validateContent,
+  validateSkill,
 } from "./validate-skill.ts";
 
 Deno.test("parseFrontmatter: extracts object frontmatter and body", () => {
@@ -150,4 +153,63 @@ Deno.test("formatResult: FAIL when a Critical exists", () => {
     scriptTests: { ran: false, passed: true, output: "" },
   });
   assertEquals(out.includes("demo: FAIL"), true);
+});
+
+const FIXTURES = new URL("./fixtures", import.meta.url).pathname;
+
+Deno.test("validateSkill: clean skill, no scripts => PASS, tests not run", async () => {
+  const r = await validateSkill("/fake/demo", "demo", {
+    readTextFile: () => Promise.resolve(VALID_SKILL),
+    hasTests: () => Promise.resolve(false),
+  });
+  assertEquals(hasCritical(r.violations), false);
+  assertEquals(r.scriptTests.ran, false);
+});
+
+Deno.test("validateSkill: passing scripts => no C4", async () => {
+  const r = await validateSkill("/fake/demo", "demo", {
+    readTextFile: () => Promise.resolve(VALID_SKILL),
+    hasTests: () => Promise.resolve(true),
+    runTests: () => Promise.resolve({ passed: true, output: "ok" }),
+  });
+  assertEquals(r.scriptTests.ran, true);
+  assertEquals(r.violations.some((x) => x.check.startsWith("C4")), false);
+});
+
+Deno.test("validateSkill: failing scripts => C4 Critical", async () => {
+  const r = await validateSkill("/fake/demo", "demo", {
+    readTextFile: () => Promise.resolve(VALID_SKILL),
+    hasTests: () => Promise.resolve(true),
+    runTests: () => Promise.resolve({ passed: false, output: "boom" }),
+  });
+  assertEquals(r.violations.some((x) => x.check.startsWith("C4")), true);
+  assertEquals(hasCritical(r.violations), true);
+});
+
+Deno.test("defaultHasTests: detects scripts/*.test.ts", async () => {
+  assertEquals(await defaultHasTests(`${FIXTURES}/passing-script`), true);
+});
+
+Deno.test("defaultHasTests: false when no scripts dir", async () => {
+  assertEquals(await defaultHasTests("/nonexistent/skill"), false);
+});
+
+Deno.test("defaultRunTests: passing fixture => passed true", async () => {
+  const r = await defaultRunTests(`${FIXTURES}/passing-script`);
+  assertEquals(r.passed, true);
+});
+
+Deno.test("defaultRunTests: failing fixture => passed false", async () => {
+  const r = await defaultRunTests(`${FIXTURES}/failing-script`);
+  assertEquals(r.passed, false);
+});
+
+Deno.test("validateSkill: bad content + failing scripts => C1 and C4", async () => {
+  const r = await validateSkill("/fake/demo", "demo", {
+    readTextFile: () => Promise.resolve("# No frontmatter"),
+    hasTests: () => Promise.resolve(true),
+    runTests: () => Promise.resolve({ passed: false, output: "boom" }),
+  });
+  assertEquals(r.violations.some((x) => x.check.startsWith("C1")), true);
+  assertEquals(r.violations.some((x) => x.check.startsWith("C4")), true);
 });

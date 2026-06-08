@@ -4,6 +4,7 @@
 // Used by /create-skill as a fail-closed gate; also runnable standalone (--all).
 
 import { parse as parseYaml } from "jsr:@std/yaml";
+import { join } from "jsr:@std/path";
 
 export const MAX_BODY_LINES = 500;
 export const MAX_NAME_LEN = 64;
@@ -163,4 +164,69 @@ export function formatResult(r: SkillResult): string {
     lines.push(`  [${x.severity}] ${x.check}: ${x.detail}`);
   }
   return lines.join("\n");
+}
+
+export type ValidateDeps = {
+  readTextFile?: (path: string | URL) => Promise<string>;
+  hasTests?: (skillDir: string) => Promise<boolean>;
+  runTests?: (skillDir: string) => Promise<{ passed: boolean; output: string }>;
+};
+
+/** True when the skill has at least one scripts/*.test.ts file. */
+export async function defaultHasTests(skillDir: string): Promise<boolean> {
+  try {
+    for await (const entry of Deno.readDir(join(skillDir, "scripts"))) {
+      if (entry.isFile && entry.name.endsWith(".test.ts")) return true;
+    }
+  } catch {
+    return false; // no scripts/ dir
+  }
+  return false;
+}
+
+/**
+ * Run a skill's scripts/ tests. Skill tests are the author's own trusted local
+ * code, so we grant `-A` to avoid false failures (e.g. tests using temp dirs).
+ */
+export async function defaultRunTests(
+  skillDir: string,
+): Promise<{ passed: boolean; output: string }> {
+  const { code, stdout, stderr } = await new Deno.Command("deno", {
+    args: ["test", "-A", join(skillDir, "scripts")],
+    stdout: "piped",
+    stderr: "piped",
+  }).output();
+  const dec = new TextDecoder();
+  return {
+    passed: code === 0,
+    output: dec.decode(stdout) + dec.decode(stderr),
+  };
+}
+
+/** Validate one skill directory: Tier-1 content checks + Tier-2 script tests. */
+export async function validateSkill(
+  skillDir: string,
+  skillName: string,
+  deps: ValidateDeps = {},
+): Promise<SkillResult> {
+  const readTextFile = deps.readTextFile ?? Deno.readTextFile;
+  const hasTests = deps.hasTests ?? defaultHasTests;
+  const runTests = deps.runTests ?? defaultRunTests;
+
+  const content = await readTextFile(join(skillDir, "SKILL.md"));
+  const violations = validateContent(content);
+
+  let scriptTests = { ran: false, passed: false, output: "" };
+  if (await hasTests(skillDir)) {
+    const result = await runTests(skillDir);
+    scriptTests = { ran: true, passed: result.passed, output: result.output };
+    if (!result.passed) {
+      violations.push({
+        severity: "Critical",
+        check: "C4 scripts",
+        detail: "scripts/ tests failed",
+      });
+    }
+  }
+  return { skill: skillName, violations, scriptTests };
 }
