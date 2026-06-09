@@ -1,5 +1,6 @@
 import { assertEquals } from "jsr:@std/assert";
 import {
+  catalogEntry,
   countFailureModes,
   extractKeywords,
   findOverlaps,
@@ -57,4 +58,75 @@ Deno.test("recommend: refine on any signal, ok otherwise", () => {
   assertEquals(recommend(0, 1, 0), "refine");
   assertEquals(recommend(1, 0, 0), "refine");
   assertEquals(recommend(0, 0, 3), "refine");
+});
+
+Deno.test("catalogEntry: aggregates signals via DI (memory => refine)", async () => {
+  const e = await catalogEntry("/skills", "demo", {
+    readTextFile: (p) => {
+      const s = String(p);
+      if (s.endsWith("SKILL.md")) {
+        return Promise.resolve(
+          "---\nname: demo\ndescription: A demo design skill. デザイン.\n---\n# Demo\nbody",
+        );
+      }
+      if (s.endsWith(".memory.md")) {
+        return Promise.resolve("## ⚠️ Failure Modes\n- a\n- b\n");
+      }
+      return Promise.reject(new Error("nope"));
+    },
+    hasTests: () => Promise.resolve(false),
+    exists: (p) => Promise.resolve(String(p).endsWith(".memory.md")),
+    home: "/home/u",
+  });
+  assertEquals(e.name, "demo");
+  assertEquals(e.criticals, 0);
+  assertEquals(e.warnings, 0);
+  assertEquals(e.memoryFailureModes, 2);
+  assertEquals(e.hasLessons, false);
+  assertEquals(e.recommend, "refine");
+  assertEquals(e.keywords.includes("design"), true);
+});
+
+Deno.test("catalogEntry: clean skill, no memory => ok", async () => {
+  const e = await catalogEntry("/skills", "clean", {
+    readTextFile: () =>
+      Promise.resolve(
+        "---\nname: clean\ndescription: A clean skill.\n---\n# Clean\nshort",
+      ),
+    hasTests: () => Promise.resolve(false),
+    exists: () => Promise.resolve(false),
+    home: "/home/u",
+  });
+  assertEquals(e.recommend, "ok");
+  assertEquals(e.memoryFailureModes, 0);
+  assertEquals(e.hasLessons, false);
+});
+
+Deno.test("catalogEntry: invalid skill => criticals>0, recommend=refine", async () => {
+  const e = await catalogEntry("/skills", "bad", {
+    readTextFile: () => Promise.resolve("no frontmatter here"),
+    hasTests: () => Promise.resolve(false),
+    exists: () => Promise.resolve(false),
+    home: "/home/u",
+  });
+  assertEquals(e.criticals > 0, true);
+  assertEquals(e.recommend, "refine");
+});
+
+Deno.test("catalogEntry: tests + lessons present are reflected", async () => {
+  const e = await catalogEntry("/skills", "rich", {
+    readTextFile: (p) =>
+      String(p).endsWith(".memory.md")
+        ? Promise.resolve("## ⚠️ Failure Modes\n- only one\n")
+        : Promise.resolve(
+          "---\nname: rich\ndescription: Rich skill.\n---\n# Rich\nbody",
+        ),
+    hasTests: () => Promise.resolve(true),
+    exists: () => Promise.resolve(true),
+    home: "/home/u",
+  });
+  assertEquals(e.hasTests, true);
+  assertEquals(e.hasLessons, true);
+  assertEquals(e.memoryFailureModes, 1);
+  assertEquals(e.recommend, "refine");
 });

@@ -3,6 +3,13 @@
 // all skills and recommends refine / merge candidates. Advisory only: always
 // exits 0. Reuses validate-skill.ts exports — no re-implementation of validation.
 
+import { join } from "jsr:@std/path";
+import {
+  defaultHasTests,
+  parseFrontmatter,
+  validateContent,
+} from "./validate-skill.ts";
+
 // Stopwords: latin filler + generic skill vocabulary, and a few katakana terms.
 // (Kanji is intentionally NOT extracted, which avoids common-kanji noise.)
 const STOPWORDS = new Set([
@@ -82,4 +89,85 @@ export function recommend(
   failureModes: number,
 ): Recommend {
   return criticals > 0 || warnings > 0 || failureModes > 0 ? "refine" : "ok";
+}
+
+export type CatalogEntry = {
+  name: string;
+  criticals: number;
+  warnings: number;
+  bodyLines: number;
+  hasTests: boolean;
+  memoryFailureModes: number;
+  hasLessons: boolean;
+  keywords: string[];
+  recommend: Recommend;
+};
+
+export type CatalogDeps = {
+  readTextFile?: (path: string | URL) => Promise<string>;
+  hasTests?: (skillDir: string) => Promise<boolean>;
+  exists?: (path: string) => Promise<boolean>;
+  home?: string;
+};
+
+/** Default `exists` dep: true if the path exists (wraps Deno.stat). */
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await Deno.stat(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Aggregate one skill's health signals. Tier-1 validation only (no subprocess). */
+export async function catalogEntry(
+  skillsRoot: string,
+  name: string,
+  deps: CatalogDeps = {},
+): Promise<CatalogEntry> {
+  const readTextFile = deps.readTextFile ?? Deno.readTextFile;
+  const hasTests = deps.hasTests ?? defaultHasTests;
+  const exists = deps.exists ?? fileExists;
+  const home = deps.home ?? Deno.env.get("HOME") ?? "";
+  const skillDir = join(skillsRoot, name);
+
+  const content = await readTextFile(join(skillDir, "SKILL.md"));
+  const violations = validateContent(content);
+  const criticals = violations.filter((v) => v.severity === "Critical").length;
+  const warnings = violations.filter((v) => v.severity === "Warning").length;
+
+  const parsed = parseFrontmatter(content);
+  const bodyLines = parsed.ok ? parsed.body.split("\n").length : 0;
+  const description = parsed.ok
+    ? String(parsed.frontmatter.description ?? "")
+    : "";
+  const keywords = extractKeywords(name, description);
+
+  const tests = await hasTests(skillDir);
+  const hasLessons = await exists(join(skillDir, "references", "lessons.md"));
+
+  let memoryFailureModes = 0;
+  const memPath = home
+    ? join(home, ".claude", "skills", name, ".memory.md")
+    : "";
+  if (memPath && (await exists(memPath))) {
+    try {
+      memoryFailureModes = countFailureModes(await readTextFile(memPath));
+    } catch {
+      // fail soft: unreadable memory => treat as no failure modes
+    }
+  }
+
+  return {
+    name,
+    criticals,
+    warnings,
+    bodyLines,
+    hasTests: tests,
+    memoryFailureModes,
+    hasLessons,
+    keywords,
+    recommend: recommend(criticals, warnings, memoryFailureModes),
+  };
 }
