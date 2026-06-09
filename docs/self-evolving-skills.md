@@ -29,7 +29,7 @@ manage（catalog）が「どのスキルを refine すべきか」を示し、re
 |------|---------|------------|------|------|
 | `/create-skill` | Creation | 要件 → 新スキル | コマンド | — |
 | `skill-memory.ts` フック | Memory | スキル使用 → `.memory.md` 注入 | PostToolUse 自動 | `--allow-env --allow-read` |
-| `validate-skill.ts` | Evaluation | SKILL.md → PASS/FAIL（構造＋scripts テスト） | `/create-skill` ゲート / 手動 | `--allow-read --allow-run` |
+| `validate-skill.ts` | Evaluation | SKILL.md → PASS/FAIL（構造＋scripts テスト） | `/create-skill` ゲート / 手動 | `--allow-read --allow-run --allow-env` |
 | `refining-skills` | Refinement | validate＋`.memory.md` → SKILL.md 改善＋`lessons.md` 昇格 | `/refine-skill` | （判断・編集） |
 | `catalog-skills.ts` | Management | validate(Tier-1)＋`.memory.md`＋fs → 健全性表＋推奨 | `/skill-catalog` | `--allow-read --allow-env` |
 
