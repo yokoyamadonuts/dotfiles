@@ -23,3 +23,4 @@ deno run --allow-read --allow-env \
 - **refine**: `/refine-skill <name>` で改善する（SP3）。
 - **merge? 候補（OVERLAP）**: 人が判断する。重複なら手動でマージ。ヒューリスティックは過検出ありうる前提。
 - カタログは「地図」。破壊的アクションはしない。
+- **VAL 列は構造(Tier-1)チェックのみ**。scripts/tests の失敗はカタログには現れない — `validate-skill <name>`（SP2 のゲート）で検出する。

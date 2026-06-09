@@ -3,6 +3,10 @@
 // all skills and recommends refine / merge candidates. Advisory only: always
 // exits 0. Reuses validate-skill.ts exports — no re-implementation of validation.
 
+// NOTE: the VAL column reflects Tier-1 (structural) validation only — it does
+// NOT run scripts/ tests (that needs --allow-run). Failing scripts/tests are
+// surfaced by the gate `validate-skill <name>`, not by this advisory catalog.
+
 import { join } from "jsr:@std/path";
 import {
   defaultHasTests,
@@ -210,6 +214,10 @@ export function formatCatalog(
       lines.push(`  ${o.a} ~ ${o.b}  (shared: ${o.shared.join(", ")})`);
     }
   }
+  lines.push("");
+  lines.push(
+    "note: VAL is Tier-1 (structural) only — run `validate-skill <name>` for the test gate.",
+  );
   return lines.join("\n");
 }
 

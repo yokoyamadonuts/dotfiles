@@ -153,6 +153,7 @@ Deno.test("formatCatalog: table + overlap section", () => {
   assertEquals(out.includes("refine"), true);
   assertEquals(out.includes("OVERLAP CANDIDATES"), true);
   assertEquals(out.includes("alpha ~ beta"), true);
+  assertEquals(out.includes("Tier-1"), true);
 });
 
 Deno.test("formatCatalog: no overlaps => none", () => {
