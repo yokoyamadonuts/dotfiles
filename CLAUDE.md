@@ -308,7 +308,7 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 
 **スキル品質の2層**: `validate-skill`（`reviewing-skills/scripts/`）は決定論的・実行可能なゲート（frontmatter・name・行数・scripts テスト）。`reviewing-skills` は LLM による定性レビュー（「何を/いつ」「例の質」「用語一貫性」）。`/create-skill` は前者をゲート、後者を品質レビューとして両方走らせる。テスト用 fixtures は `scripts/fixtures/` に置けばゲートの対象外になる。
 
-**スキルのライフサイクル**: `/create-skill`（誕生）→ `validate-skill`＋`reviewing-skills`（評価）→ 使用中に `.memory.md` へ経験蓄積（per-skill メモリ）→ `/refine-skill`＝`refining-skills`（既存スキルを経験駆動で改善し、普遍的教訓を `references/lessons.md` へ昇格）。`refining-skills` だけが `.memory.md` を消費する。改善は編集までで、確定は `/commit`。 全スキルの健全性は `/skill-catalog`（`catalog-skills.ts`, advisory・非破壊・常に exit 0）で一望でき、refine 推奨や重複候補を示す。
+**スキルのライフサイクル**: `/create-skill`（誕生）→ `validate-skill`＋`reviewing-skills`（評価）→ `.memory.md` へ経験蓄積 → `/refine-skill`（改善）→ `/skill-catalog`（俯瞰）。改善は編集までで確定は `/commit`。全体像・4役割・データフローは [docs/self-evolving-skills.md](docs/self-evolving-skills.md)（および上の「Self-Evolving Skills」節）を参照。
 
 ### TDD系スキルの関係
 
@@ -325,6 +325,18 @@ developing (親スキル: TDDワークフロー全体)
 1. Create `claude/skills/<skill-name>/SKILL.md`
 2. Define triggers, workflow, and expected output
 3. Run `cd claude && ./install.sh` to deploy
+
+### Self-Evolving Skills（自己進化スキル）
+
+スキルを経験から自己改善させるライフサイクル（MUSE-Autoskill 適用）。全体像・データフロー・各サブプロジェクトの索引は **[docs/self-evolving-skills.md](docs/self-evolving-skills.md)** を参照。
+
+| 役割 | 道具 | 性質 |
+|------|------|------|
+| gate | `validate-skill`（`/create-skill` 内・手動） | 決定論ゲート（通らなければブロック） |
+| action | `refining-skills`（`/refine-skill`） | 既存スキルを経験駆動で改善 |
+| management | `catalog-skills`（`/skill-catalog`） | 全スキルの advisory 俯瞰（常に exit 0） |
+| qualitative | `reviewing-skills` | LLM 定性レビュー |
+| memory | `skill-memory.ts` フック | スキル固有の経験を `.memory.md` に注入・蓄積 |
 
 ### Per-Skill Memory (`.memory.md`)
 
