@@ -21,6 +21,8 @@ description: Claude Codeスキルを公式ベストプラクティスに基づ�
 1. **決定論ゲートを先に実行**（機械判定可能な項目を自動チェック）:
    `deno run --allow-read --allow-run --allow-env scripts/validate-skill.ts <skill-name>`
    Critical はここで確実に検出される。本スキルは残りの**定性的**項目に集中する。
+
+   関連: 全スキルの健全性を一望するには `scripts/catalog-skills.ts`（`/skill-catalog`）。どのスキルを refine すべきかの advisory な地図を出す（非破壊・常に exit 0）。
 2. 対象のSKILL.mdファイルを完全に読み込む
 3. [best-practices.md](references/best-practices.md) でチェックリストを確認
 4. YAMLフロントマター（name, description）を解析

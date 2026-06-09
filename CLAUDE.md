@@ -231,6 +231,7 @@ Create skills for tasks done 2+ times per day:
 |---------|---------------|------|
 | `/impl` | `developing` | TDDワークフロー実行 |
 | `/refine-skill` | `refining-skills` | 既存スキルの経験駆動改善（validate-skill + .memory.md） |
+| `/skill-catalog` | （スクリプト直接） | 全スキルの健全性カタログ（advisory・refine/merge 候補） |
 | `/tdd` | `developing`, `writing-tests` | TDDサイクルガイド |
 | `/spec` | `analyzing-requirements`, `planning-tasks` | 設計→タスク生成 |
 | `/write-prd` | `write-prd` | ソクラテス式質問+マルチ視点レビュー |
@@ -307,7 +308,7 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 
 **スキル品質の2層**: `validate-skill`（`reviewing-skills/scripts/`）は決定論的・実行可能なゲート（frontmatter・name・行数・scripts テスト）。`reviewing-skills` は LLM による定性レビュー（「何を/いつ」「例の質」「用語一貫性」）。`/create-skill` は前者をゲート、後者を品質レビューとして両方走らせる。テスト用 fixtures は `scripts/fixtures/` に置けばゲートの対象外になる。
 
-**スキルのライフサイクル**: `/create-skill`（誕生）→ `validate-skill`＋`reviewing-skills`（評価）→ 使用中に `.memory.md` へ経験蓄積（per-skill メモリ）→ `/refine-skill`＝`refining-skills`（既存スキルを経験駆動で改善し、普遍的教訓を `references/lessons.md` へ昇格）。`refining-skills` だけが `.memory.md` を消費する。改善は編集までで、確定は `/commit`。
+**スキルのライフサイクル**: `/create-skill`（誕生）→ `validate-skill`＋`reviewing-skills`（評価）→ 使用中に `.memory.md` へ経験蓄積（per-skill メモリ）→ `/refine-skill`＝`refining-skills`（既存スキルを経験駆動で改善し、普遍的教訓を `references/lessons.md` へ昇格）。`refining-skills` だけが `.memory.md` を消費する。改善は編集までで、確定は `/commit`。 全スキルの健全性は `/skill-catalog`（`catalog-skills.ts`, advisory・非破壊・常に exit 0）で一望でき、refine 推奨や重複候補を示す。
 
 ### TDD系スキルの関係
 
