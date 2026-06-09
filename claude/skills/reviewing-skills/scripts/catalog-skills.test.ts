@@ -1,9 +1,11 @@
 import { assertEquals } from "jsr:@std/assert";
+import { join } from "jsr:@std/path";
 import {
   catalogEntry,
   countFailureModes,
   extractKeywords,
   findOverlaps,
+  formatCatalog,
   recommend,
 } from "./catalog-skills.ts";
 
@@ -129,4 +131,74 @@ Deno.test("catalogEntry: tests + lessons present are reflected", async () => {
   assertEquals(e.hasLessons, true);
   assertEquals(e.memoryFailureModes, 1);
   assertEquals(e.recommend, "refine");
+});
+
+Deno.test("formatCatalog: table + overlap section", () => {
+  const out = formatCatalog(
+    [{
+      name: "alpha",
+      criticals: 0,
+      warnings: 1,
+      bodyLines: 612,
+      hasTests: false,
+      memoryFailureModes: 0,
+      hasLessons: false,
+      keywords: ["x"],
+      recommend: "refine",
+    }],
+    [{ a: "alpha", b: "beta", shared: ["design"] }],
+  );
+  assertEquals(out.includes("alpha"), true);
+  assertEquals(out.includes("W1"), true);
+  assertEquals(out.includes("refine"), true);
+  assertEquals(out.includes("OVERLAP CANDIDATES"), true);
+  assertEquals(out.includes("alpha ~ beta"), true);
+});
+
+Deno.test("formatCatalog: no overlaps => none", () => {
+  const out = formatCatalog([], []);
+  assertEquals(out.includes("OVERLAP CANDIDATES: none"), true);
+});
+
+Deno.test("formatCatalog: critical skill shows C prefix (precedence over W)", () => {
+  const out = formatCatalog(
+    [{
+      name: "bad",
+      criticals: 2,
+      warnings: 1,
+      bodyLines: 10,
+      hasTests: false,
+      memoryFailureModes: 0,
+      hasLessons: false,
+      keywords: [],
+      recommend: "refine",
+    }],
+    [],
+  );
+  assertEquals(out.includes("C2"), true);
+  assertEquals(out.includes("W1"), false); // criticals take precedence
+});
+
+const SCRIPT = new URL("./catalog-skills.ts", import.meta.url).pathname;
+
+Deno.test("CLI: lists skills and exits 0 (advisory)", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    await Deno.mkdir(join(tmp, "alpha"));
+    await Deno.writeTextFile(
+      join(tmp, "alpha", "SKILL.md"),
+      "---\nname: alpha\ndescription: Alpha skill.\n---\n# Alpha\nbody",
+    );
+    const { code, stdout } = await new Deno.Command("deno", {
+      args: ["run", "--allow-read", "--allow-env", SCRIPT],
+      env: { VALIDATE_SKILLS_DIR: tmp, HOME: tmp },
+      stdout: "piped",
+      stderr: "piped",
+    }).output();
+    const out = new TextDecoder().decode(stdout);
+    assertEquals(code, 0);
+    assertEquals(out.includes("alpha"), true);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
 });

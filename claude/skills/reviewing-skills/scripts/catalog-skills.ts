@@ -6,7 +6,9 @@
 import { join } from "jsr:@std/path";
 import {
   defaultHasTests,
+  listSkills,
   parseFrontmatter,
+  skillsDir,
   validateContent,
 } from "./validate-skill.ts";
 
@@ -170,4 +172,66 @@ export async function catalogEntry(
     keywords,
     recommend: recommend(criticals, warnings, memoryFailureModes),
   };
+}
+
+/** Render the catalog as a human-readable table + overlap section. */
+export function formatCatalog(
+  entries: CatalogEntry[],
+  overlaps: Overlap[],
+): string {
+  const lines: string[] = [];
+  lines.push(
+    `${"SKILL".padEnd(30)} ${"VAL".padEnd(5)} ${
+      "LINES".padStart(5)
+    } TEST MEM LESS REC`,
+  );
+  for (const e of entries) {
+    const val = e.criticals > 0
+      ? `C${e.criticals}`
+      : e.warnings > 0
+      ? `W${e.warnings}`
+      : "ok";
+    lines.push(
+      `${e.name.padEnd(30)} ${val.padEnd(5)} ${
+        String(e.bodyLines).padStart(5)
+      } ` +
+        `${e.hasTests ? "yes" : "no "}  ${
+          String(e.memoryFailureModes).padStart(3)
+        } ` +
+        `${e.hasLessons ? "yes" : "no "}  ${e.recommend}`,
+    );
+  }
+  lines.push("");
+  if (overlaps.length === 0) {
+    lines.push("OVERLAP CANDIDATES: none");
+  } else {
+    lines.push("OVERLAP CANDIDATES (advisory — human judges):");
+    for (const o of overlaps) {
+      lines.push(`  ${o.a} ~ ${o.b}  (shared: ${o.shared.join(", ")})`);
+    }
+  }
+  return lines.join("\n");
+}
+
+async function main(): Promise<void> {
+  const dir = skillsDir();
+  const names = await listSkills(dir);
+  const entries: CatalogEntry[] = [];
+  for (const name of names) {
+    try {
+      entries.push(await catalogEntry(dir, name));
+    } catch (e) {
+      // advisory: skip skills we can't read, note on stderr.
+      console.error(`skip ${name}: ${(e as Error).message}`);
+    }
+  }
+  const overlaps = findOverlaps(
+    entries.map((e) => ({ name: e.name, keywords: e.keywords })),
+  );
+  console.log(formatCatalog(entries, overlaps));
+  // advisory only — always exit 0 (no Deno.exit needed).
+}
+
+if (import.meta.main) {
+  await main();
 }

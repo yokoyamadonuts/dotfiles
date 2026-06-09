@@ -246,7 +246,7 @@ export async function validateSkill(
 }
 
 /** Resolve the skills directory: env override (for tests) or relative to this file. */
-function skillsDir(): string {
+export function skillsDir(): string {
   const override = Deno.env.get("VALIDATE_SKILLS_DIR");
   if (override) return override;
   // this file lives at claude/skills/reviewing-skills/scripts/validate-skill.ts
