@@ -426,7 +426,7 @@ export async function catalogEntry(
 - [ ] **Step 4: Run tests to verify they pass**
 
 Run: `deno test --allow-read --allow-env claude/skills/reviewing-skills/scripts/catalog-skills.test.ts`
-Expected: PASS（9 tests passed）
+Expected: PASS（11 tests passed） (9 from plan + 2 coverage tests added in review: criticals path, tests/lessons branches)
 
 - [ ] **Step 5: Type-check, format, commit**
 
@@ -618,7 +618,7 @@ if (import.meta.main) {
 - [ ] **Step 5: Run tests to verify they pass**
 
 Run: `deno test --allow-read --allow-run --allow-write --allow-env claude/skills/reviewing-skills/scripts/catalog-skills.test.ts`
-Expected: PASS（12 tests passed）
+Expected: PASS（14 tests passed）
 
 - [ ] **Step 6: Smoke-test against the real repo**
 
@@ -735,7 +735,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - [ ] **Step 1: Full catalog test suite**
 
 Run: `deno test --allow-read --allow-run --allow-write --allow-env claude/skills/reviewing-skills/scripts/catalog-skills.test.ts`
-Expected: PASS（12 tests passed）
+Expected: PASS（14 tests passed）
 
 - [ ] **Step 2: validate-skill still green (skillsDir export is non-breaking)**
 
@@ -783,7 +783,7 @@ Report PASS/FAIL per criterion.
 ## Self-Review (plan author)
 
 - **Spec coverage**: signals (§4)→T3 catalogEntry; recommendation (§5)→T2 recommend; overlap (§6)→T1; reuse/testability (§7)→T3/T4 imports + DI; CLI (§8)→T4 (exit 0); boundary (§9)→T5 docs; testing (§10)→T1-T4; files (§11)→all; scope (§12) respected (no usage-tracking, no auto-actions, no --json); AC (§13)→T6. All covered.
-- **Cumulative test counts**: T1=4, T2=7, T3=9, T4=12. Stated per task.
+- **Cumulative test counts**: T1=4, T2=7, T3=11, T4=14. (T3 gained +2 coverage tests in review.) Stated per task.
 - **Reuse / DRY**: imports `validateContent`, `parseFrontmatter`, `defaultHasTests`, `listSkills`, `skillsDir` from validate-skill.ts. `skillsDir` is newly exported (T4 Step 1, non-breaking, re-verified by validate-skill's 37 tests).
 - **Least privilege**: catalog uses Tier-1 only (no `deno test` subprocess) → runs with `--allow-read --allow-env` (no `--allow-run`). Test file needs broader perms for its own subprocess test (that's the runner, not the script).
 - **Placeholders**: full code in every step; CLAUDE.md/SKILL.md edits give exact anchors + text.
