@@ -260,6 +260,7 @@ AskUserQuestion({
 - **ship-check**: ローンチ前の品質監査
 - **build-in-public**: ローンチ後のコンテンツ戦略
 - **analyze-data**: ローンチ結果の分析
+- **japanese-tech-writing**: ローンチ計画の説明文を執筆・推敲する際の日本語文章規範
 
 ---
 

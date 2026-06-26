@@ -243,3 +243,4 @@ AskUserQuestion({
 - **devils-advocate**: 戦略・計画レベルのストレステスト。設計判断の妥当性に疑問がある場合に使用
 - **ship-check**: プロダクトレベルの出荷判断。`/design-intent` はコード変更単位の判断
 - **analyzing-requirements**: 設計意図を新しい要件に落とし込む際に使用
+- **japanese-tech-writing**: 設計意図・トレードオフの記述を執筆・推敲する際の日本語文章規範

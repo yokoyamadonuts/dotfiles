@@ -291,6 +291,17 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 ```
 → 詳細は `docs/indie-dev-roadmap.md` を参照
 
+### 文章規範スキル（横断適用）
+
+`japanese-tech-writing` は単一のワークフローを持たず、他スキルが生成する**日本語ドキュメントの文章品質**を律する横断スキル。整形（一文一行・脚注・コラム記法）、パラグラフライティング、論証の厳密さ、読み手の負荷管理、演出の抑制、LLM っぽい空句の禁止、冗長の排除、見出しの付け方を定める。
+
+| 項目 | 内容 |
+|------|------|
+| 適用タイミング | 日本語で技術書の章・草稿・記事・解説文を書く／推敲・リライトするとき（description のトリガーで自動起動） |
+| 参照元 | 文書生成系スキルの「関連スキル」節（write-prd, analyzing-requirements, planning-tasks, product-strategy, design-intent, competitive-research, analyze-data, build-or-buy, validate-idea, ship-check, mvp-scaffolding, launch-playbook, youtube-research, plan-first の14スキル） |
+| 非適用 | 社会発信・音声・スライド系（x-growth, build-in-public, zundamon-video, pr-video, pptx）は register が異なるため対象外 |
+| 出典 | [gist: k16shikano/fd287c…](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)（Unlicense / パブリックドメイン） |
+
 ### レビュー系スキルの使い分け
 
 ```

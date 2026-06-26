@@ -221,6 +221,7 @@ AskUserQuestion({
 - **launch-playbook**: ローンチ戦略策定
 - **competitive-research**: 競合の詳細調査（必要な場合）
 - **build-in-public**: 検証プロセス自体をコンテンツ化
+- **japanese-tech-writing**: 検証レポートの所見を執筆・推敲する際の日本語文章規範
 
 ---
 

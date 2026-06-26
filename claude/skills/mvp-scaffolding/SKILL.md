@@ -257,3 +257,4 @@ MVP段階で避けるべきことを明示する：
 - **competitive-research**: Buy候補の詳細比較
 - **plan-first**: 初期構築後の開発計画策定
 - **analyzing-requirements**: MVP後の本格的なシステム設計
+- **japanese-tech-writing**: スタック選定の根拠記述を執筆・推敲する際の日本語文章規範

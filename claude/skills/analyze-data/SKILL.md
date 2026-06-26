@@ -205,3 +205,4 @@ A/Bテスト等の実験結果を分析する。
 - **product-strategy**: データ分析に基づく戦略策定
 - **write-prd**: データ分析結果をPRDに反映
 - **devils-advocate**: 分析の仮定や結論をストレステスト
+- **japanese-tech-writing**: 分析レポートの考察・要約を執筆・推敲する際の日本語文章規範

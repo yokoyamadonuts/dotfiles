@@ -245,3 +245,4 @@ Task({
 - **analyzing-requirements**: PRD完成後、技術的な設計仕様(DESIGN.md)に変換する場合に使用
 - **planning-tasks**: DESIGN.md完成後、タスク分解(TODO.md)に使用
 - **devils-advocate**: PRDの戦略をストレステストする場合に使用
+- **japanese-tech-writing**: PRD 本文を執筆・推敲する際の日本語文章規範（パラグラフ・論証・冗長排除・LLM 口調の禁止）

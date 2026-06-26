@@ -213,3 +213,4 @@ Task({
 - **competitive-research**: 競合リサーチに特化
 - **write-prd**: 戦略に基づくPRD作成
 - **analyzing-requirements**: 技術設計への変換
+- **japanese-tech-writing**: 戦略書の診断・基本方針・論証を執筆・推敲する際の日本語文章規範

@@ -332,3 +332,4 @@ rg "catch.*console\.(error|log)" --type ts --type tsx
 - **designing-refactoring**: コード構造の改善を担当
 - **devils-advocate**: 戦略レベルの検証を担当
 - **security-reviewer エージェント**: 本格的なセキュリティレビューが必要な場合
+- **japanese-tech-writing**: 監査レポートの所見・要約を執筆・推敲する際の日本語文章規範

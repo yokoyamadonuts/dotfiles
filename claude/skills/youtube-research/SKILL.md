@@ -217,3 +217,4 @@ Task(subagent_type="general-purpose", prompt="動画Bのトランスクリプト
 - **`analyze-data`**: 動画から抽出したデータの定量分析
 - **`write-prd`**: 技術動画の知見をPRDに反映
 - **`pptx`**: 動画リサーチの結果をスライドにまとめる
+- **`japanese-tech-writing`**: 動画の要約・解説文を執筆・推敲する際の日本語文章規範（冗長排除・LLM 口調の禁止）

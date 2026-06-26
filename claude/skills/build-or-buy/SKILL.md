@@ -228,3 +228,4 @@ AI機能を持つプロダクトの場合、Build/Buy以外に**BYOK**という�
 - **mvp-scaffolding**: プロジェクト初期のスタック全体のBuild vs Buy判定
 - **plan-first**: 意思決定ログとして計画に組み込み
 - **devils-advocate**: 決定のストレステスト
+- **japanese-tech-writing**: 意思決定ドキュメントの根拠記述を執筆・推敲する際の日本語文章規範

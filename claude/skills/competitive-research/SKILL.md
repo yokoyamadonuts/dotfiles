@@ -127,3 +127,4 @@ Web検索を活用して最新情報を収集すること。`,
 - **product-strategy**: 競合リサーチの結果を戦略策定に活用
 - **write-prd**: 競合分析を踏まえたPRD作成
 - **devils-advocate**: 競合分析の仮定をストレステスト
+- **japanese-tech-writing**: 比較分析レポートの本文を執筆・推敲する際の日本語文章規範

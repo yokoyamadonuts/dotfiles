@@ -416,3 +416,4 @@ Write(
 
 ### 関連スキル
 - **planning-tasks**: DESIGN.md完成後、このスキルを使用してタスク分解とTODO.md生成を行う
+- **japanese-tech-writing**: DESIGN.md の設計根拠・説明文を執筆・推敲する際の日本語文章規範

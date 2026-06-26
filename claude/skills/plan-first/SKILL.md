@@ -157,3 +157,7 @@ mkdir -p docs/plans
 
 **迷ったら**: まず `plan-first` で軽く計画を書いてみる。
 書いているうちに設計が複雑だと気づいたら `analyzing-requirements` に切り替える。
+
+## 関連スキル
+
+- **japanese-tech-writing**: docs/plans/ の計画本文を書く際の日本語文章規範（パラグラフ・冗長排除・見出しの付け方）
