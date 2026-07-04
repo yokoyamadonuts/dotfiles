@@ -23,6 +23,20 @@ new_cwd = "follow"
 # Change to "ctrl+b" if you run herdr nested inside tmux to avoid a collision.
 prefix = "ctrl+s"
 
+# Open the current pane's working directory in Zed (prefix, then alt+z).
+# Zed returns immediately, so run it detached in the background.
+[[keys.command]]
+key = "prefix+alt+z"
+type = "shell"
+command = "zed ."
+
+# Launch a Claude Code agent in a throwaway pane (prefix, then alt+c).
+# herdr detects it and surfaces its state via the claude integration hook.
+[[keys.command]]
+key = "prefix+alt+c"
+type = "pane"
+command = "claude"
+
 [update]
 channel = "stable"
 version_check = true

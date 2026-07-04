@@ -2,13 +2,26 @@
 // Managed in dotfiles: ~/.config/zed/settings.json -> dotfiles/zed/settings.json
 {
   // Heavy Neovim user — keep modal editing.
+  "minimap": {
+    "show": "always"
+  },
+  // In-editor Claude Code agent over ACP (declarative, reproducible via dotfiles).
+  // Auth is handled inside the thread with /login — no API key needed here.
+  "agent_servers": {
+    "Claude Code": {
+      "type": "custom",
+      "command": "npx",
+      "args": ["-y", "@zed-industries/claude-code-acp@latest"],
+      "env": {}
+    }
+  },
   "vim_mode": true,
   "base_keymap": "VSCode",
 
   // Appearance — match the wezterm setup (Cica font, dark iceberg-ish theme).
   "theme": {
     "mode": "dark",
-    "dark": "One Dark",
+    "dark": "Ayu Dark",
     "light": "One Light"
   },
   "buffer_font_family": "Cica",
