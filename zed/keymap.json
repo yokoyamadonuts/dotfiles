@@ -1,0 +1,14 @@
+// Zed keymap — https://zed.dev/docs/key-bindings
+// Managed in dotfiles: ~/.config/zed/keymap.json -> dotfiles/zed/keymap.json
+[
+  {
+    // Normal mode: space as leader-ish quick actions (Neovim muscle memory).
+    "context": "vim_mode == normal",
+    "bindings": {
+      "space space": "file_finder::Toggle",
+      "space f": "project_search::ToggleFocus",
+      "space e": "project_panel::ToggleFocus",
+      "space g": "git_panel::ToggleFocus"
+    }
+  }
+]

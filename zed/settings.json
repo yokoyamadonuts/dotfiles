@@ -1,0 +1,51 @@
+// Zed settings — https://zed.dev/docs/configuration
+// Managed in dotfiles: ~/.config/zed/settings.json -> dotfiles/zed/settings.json
+{
+  // Heavy Neovim user — keep modal editing.
+  "vim_mode": true,
+  "base_keymap": "VSCode",
+
+  // Appearance — match the wezterm setup (Cica font, dark iceberg-ish theme).
+  "theme": {
+    "mode": "dark",
+    "dark": "One Dark",
+    "light": "One Light"
+  },
+  "buffer_font_family": "Cica",
+  "buffer_font_size": 15,
+  "ui_font_size": 15,
+
+  // Editor behaviour.
+  "format_on_save": "on",
+  "ensure_final_newline_on_save": true,
+  "remove_trailing_whitespace_on_save": true,
+  "tab_size": 2,
+  "soft_wrap": "editor_width",
+  "relative_line_numbers": true,
+  "scrollbar": { "show": "auto" },
+
+  // Integrated terminal uses fish (the shell configured in this dotfiles repo).
+  "terminal": {
+    "shell": {
+      "program": "fish"
+    },
+    "font_family": "Cica",
+    "font_size": 15
+  },
+
+  // Git.
+  "git": {
+    "inline_blame": { "enabled": true }
+  },
+
+  // Keep the AI panel quiet by default; enable per-project as needed.
+  "features": {
+    "edit_prediction_provider": "zed"
+  },
+
+  // Telemetry off to match a privacy-conscious dotfiles setup.
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false
+  }
+}

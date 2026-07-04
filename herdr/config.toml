@@ -1,0 +1,28 @@
+# herdr configuration — https://herdr.dev/docs/configuration/
+# Managed in dotfiles: ~/.config/herdr/config.toml -> dotfiles/herdr/config.toml
+# Regenerate the full annotated default with: herdr --default-config
+
+# Onboarding already handled by this dotfiles setup.
+onboarding = false
+
+[theme]
+# Built-in: catppuccin, terminal, tokyo-night, dracula, nord, gruvbox,
+#           one-dark, solarized, kanagawa, rose-pine, vesper.
+# tokyo-night is the closest match to the iceberg-dark palette used in wezterm.
+name = "tokyo-night"
+
+[terminal]
+# Match the shell configured in this dotfiles repo.
+default_shell = "fish"
+shell_mode = "auto"
+# New panes/tabs inherit the source pane's working directory.
+new_cwd = "follow"
+
+[keys]
+# Prefix matches the tmux prefix used elsewhere in these dotfiles (Ctrl+s).
+# Change to "ctrl+b" if you run herdr nested inside tmux to avoid a collision.
+prefix = "ctrl+s"
+
+[update]
+channel = "stable"
+version_check = true
