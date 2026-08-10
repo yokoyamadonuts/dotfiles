@@ -8,8 +8,16 @@ function agent-open
     end
 
     set -l root (git rev-parse --show-toplevel 2>/dev/null)
+    if test -z "$root"
+        echo "Not inside a git repository."
+        return 1
+    end
     set -l repo_name (basename "$root")
-    set -l target "$WORKTREE_BASE/$repo_name-$argv[1]"
+
+    # Fall back like zsh/zshrc does; config.fish may not be installed.
+    set -l base $WORKTREE_BASE
+    test -n "$base"; or set base "$HOME/.worktrees"
+    set -l target "$base/$repo_name-$argv[1]"
 
     if test -d "$target"
         zed "$target"
