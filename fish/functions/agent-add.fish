@@ -74,6 +74,28 @@ function agent-add
         return 1
     end
 
+    # A brand-new tab is not yet "an available shell": the startup chain is
+    # still in the foreground (readlink, bash, bash, bash, fish here) and
+    # `agent start` rejects the pane with agent_pane_busy. Wait until the
+    # shell is alone in the foreground. Settles in ~0.25s on this machine,
+    # but config.fish runs rbenv/nodenv/gcloud init, so allow headroom.
+    set -l settled 0
+    for i in (seq 1 50)
+        set -l alone (herdr pane process-info --pane "$pane" 2>/dev/null |
+            jq -r '[.result.process_info.foreground_processes[].pid] == [.result.process_info.shell_pid]' 2>/dev/null)
+        if test "$alone" = true
+            set settled 1
+            break
+        end
+        sleep 0.2
+    end
+    if test $settled -eq 0
+        echo "Pane $pane never settled to an idle shell (waited 10s)."
+        herdr tab close "$tab" >/dev/null 2>&1
+        echo "Closed tab $tab. Worktree is ready at: $target"
+        return 1
+    end
+
     set -l started (herdr agent start "$name" --kind claude --pane "$pane" 2>&1)
     if test $status -ne 0
         # Do not strand the tab we just opened.
