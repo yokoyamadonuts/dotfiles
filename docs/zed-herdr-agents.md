@@ -37,18 +37,33 @@ agent-fleet                # 🔴 が付いた（入力待ちの）エージェ�
 agent-open feature-x       # そのworktreeを Zed で開いてレビュー・手直し
 ```
 
-herdr 側の CLI 制御（スクリプト/オーケストレーション用）:
+herdr 側の CLI 制御（スクリプト/オーケストレーション用、herdr 0.8.0）:
 
 ```fish
 herdr agent list                                   # 状態付き一覧
-herdr agent wait <target> --status blocked         # blocked になるまで待つ
+herdr agent wait <target> --until blocked          # blocked になるまで待つ
 herdr agent read <target> --source recent          # 直近出力を読む
-herdr agent send <target> "続けて"                  # 入力を送る
-herdr agent focus <target>                          # フォーカス移動
+herdr agent prompt <target> "続けて" --wait         # 入力 + Enter を送る
+herdr agent focus <target>                         # フォーカス移動
 ```
+
+`herdr agent --help` と `herdr agent`（サブコマンド無し）は別の内容を返す。
+**後者が完全なシグネチャ**なので、コマンドを調べる時はグループ名を単体で実行する。
+
+## Claude 用スキル
+
+| スキル | 役割 |
+|--------|------|
+| `claude/skills/herdr/` | herdr 公式。CLI リファレンス（ID 体系・状態遷移・read source の使い分け） |
+| `claude/skills/herdr-swarm/` | queen/bee 並列委譲パターン（ryutaroM/rsnug-cli 由来, MIT） |
+
+どちらも `HERDR_ENV=1` ゲート付きで、herdr ペインの外では発火しない。
 
 ## 注意点
 
 - **prefix 衝突**: herdr を tmux の**中**で使う場合、`Ctrl+s` が衝突する。`herdr/config.toml` の `prefix` を `ctrl+b` に変える。
 - **herdr 統合の再インストール**: `herdr integration install claude` を再実行すると `claude/settings.json` を herdr が全体整形（キー並べ替え・末尾改行削除）し直す。差分が荒れたら手で戻すか、SessionStart フックだけ残す。
 - **状態連携は herdr 内でのみ有効**: フックは `HERDR_ENV=1`（herdr ペイン）でしか発火しない。通常ターミナルの Claude には影響なし。
+- **0.8.0 で `agent start` の意味論が変わった**: レイアウトを作らなくなり `--cwd` が消えた。既存ペインを要求する（`--kind KIND --pane ID`）。`agent-add` はこれに合わせてタブを先に作る2段構えになっている。
+- **新規タブは即座には使えない**: `tab create` 直後のペインはシェル起動チェーンが前面に居るため `agent start` が `agent_pane_busy` を返す。`agent-add` は `pane process-info` でシェルが単独になるまで待つ。自前でスクリプトを書く時も同じ待ちが要る。
+- **`herdr status server` は停止中でも exit 0**: 稼働判定には使えない。`fish/functions/__herdr_running.fish` が `herdr agent list` の終了コードで判定している。
