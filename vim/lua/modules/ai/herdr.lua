@@ -48,4 +48,50 @@ function M.agent_name(path, kind)
   return base .. suffix
 end
 
+-- vim.system の結果を (値, エラー) に変換する純粋関数。
+-- herdr はサーバエラーを「終了コード1 + stdout の JSON」で返す。
+-- @param res table {code=number, stdout=string, stderr=string}
+-- @param raw boolean|nil true なら stdout をそのまま返す（read 用）
+-- @return any|nil, string|nil
+function M.parse(res, raw)
+  local out = res.stdout or ""
+
+  local decoded
+  local ok, d = pcall(vim.json.decode, out)
+  if ok then
+    decoded = d
+  end
+
+  -- herdr のエラーは終了コードより先に見る（メッセージが具体的なため）
+  if type(decoded) == "table" and decoded.error then
+    return nil, decoded.error.message or decoded.error.code or "unknown herdr error"
+  end
+
+  if res.code ~= 0 then
+    local stderr = vim.trim(res.stderr or "")
+    -- サーバ未起動時、CLI は生の Rust エラーを出す。そのまま見せない。
+    if stderr:find("NotFound", 1, true) or stderr:find("No such file or directory", 1, true) then
+      return nil, "herdr server is not running. Start it with: herdr"
+    end
+    if stderr ~= "" then
+      return nil, stderr
+    end
+    local text = vim.trim(out)
+    if text ~= "" then
+      return nil, text
+    end
+    return nil, string.format("herdr exited with code %d", res.code)
+  end
+
+  if raw then
+    return out, nil
+  end
+
+  if decoded == nil then
+    return nil, "herdr returned unparseable output: " .. vim.trim(out)
+  end
+
+  return decoded, nil
+end
+
 return M
