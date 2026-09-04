@@ -1,3 +1,9 @@
+---
+description: "重複コード・デッドコード・TODO/FIXMEを検出して技術的負債を整理。jscpd/knip/cargo machete等を使用。"
+argument-hint: "[--scope=<path>]"
+allowed-tools: ["Bash", "Read", "Grep", "Glob", "Edit", "TodoWrite", "AskUserQuestion"]
+---
+
 # /techdebt - Technical Debt Cleanup
 
 セッション終了時や適宜、技術的負債を検出・削除するコマンド。
