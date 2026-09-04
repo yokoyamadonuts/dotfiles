@@ -4,382 +4,57 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a personal dotfiles repository for managing development environment configurations across macOS and Linux systems. The repository uses a modular structure where each tool has its own directory with configuration files and an installation script.
+Personal dotfiles for macOS and Linux. Modular structure: each tool has its own directory
+(git/, vim/, zsh/, fish/, tmux/, wezterm/, karabiner/, claude/) with config files and an
+`install.sh` that symlinks them into place.
 
-## Repository Structure
+## Repository-Specific Gotchas
 
-- **git/** - Git configuration with GPG signing, aliases, and difftastic integration
-- **vim/** - Extensive Neovim configuration using Lua and lazy.nvim plugin manager
-- **zsh/** - Z shell configuration with custom aliases, functions, and key bindings
-- **fish/** - Fish shell configuration (alternative to zsh)
-- **tmux/** - Terminal multiplexer configuration with platform-specific variants
-- **wezterm/** - WezTerm terminal emulator configuration
-- **karabiner/** - macOS keyboard remapping configuration
-- **claude/** - Claude Code custom commands and configuration
-
-## Installation and Setup
-
-### Full Installation
-```bash
-# Clone repository
-git clone https://github.com/skanehira/dotfiles.git
-cd dotfiles
-
-# Run individual installers (main install.sh is incomplete)
-cd git && ./install.sh
-cd ../vim && ./install.sh
-cd ../tmux && ./install.sh
-cd ../zsh && ./install.sh   # OR
-cd ../fish && ./install.sh  # Fish shell alternative
-cd ../wezterm && ./install.sh
-cd ../karabiner && ./install.sh  # macOS only
-cd ../claude && ./install.sh
-```
-
-### Key Dependencies
-- Homebrew (package manager)
-- Neovim
-- Zsh with zsh-autosuggestions
-- asdf (version manager)
-- fzf, ripgrep, bat, lsd, delta, ghq, lazygit
-- Docker, kubectl, terraform (for development)
-
-## Common Commands and Workflows
-
-### Essential Aliases
-- `v` - Open Neovim
-- `lg` - Launch lazygit
-- `gs` - Git status
-- `ll` - List files with details (using lsd)
-- `k` - kubectl
-- `d` - docker compose
-- `t` - terraform
-
-### Key Bindings
-- `Ctrl+g` - Fuzzy search and switch to ghq-managed repositories
-- `Ctrl+k` - Interactive git branch switcher with preview
-- `Ctrl+q` - Toggle tmux popup window
-
-### Development Paths
-- Go binaries: `$HOME/go/bin`
-- ghq repositories: `$HOME/dev`
-- Deno binaries: `$HOME/.deno/bin`
-
-## Neovim Configuration
-
-### Plugin Management
-Uses lazy.nvim as the plugin manager. Configuration files are in `vim/lua/plugins/`.
-
-### LSP Support
-LSP configurations are in `vim/after/` for:
-- Deno, TypeScript, Rust, Lua, YAML
-
-### Key Features
-- AI integration: Copilot, Copilot Chat, Claude Code
-- Git integration: Gina, Gitsigns, Diffview
-- Fuzzy finding: Telescope
-- Code templates: SonicTemplate
-- LSP enhancements: tiny-code-action, tiny-inline-diagnostic
-- Quickfix improvements: bqf, quicker
+- **Symlink deployment**: `claude/install.sh` symlinks `claude/{skills,commands,agents,rules,hooks,settings.json}` into `~/.claude/`. Because these are directory symlinks, edits in the repo are live immediately — no redeploy step needed. New top-level artifacts (e.g. a new directory) need an `install.sh` update.
+- **Git is GPG-signed** — ensure GPG is set up before committing outside Claude sessions.
+- **tmux prefix is `Ctrl+s`**, not the default `Ctrl+b`.
+- **ghq-managed repos live under `$HOME/dev`**; many functions assume this.
+- The working volume is **case-sensitive** (`/Volumes/Partition_Case_Sensitive`); beware case-only renames.
+- Modern CLI replacements are assumed (lsd for ls, delta for diff, bat, ripgrep, fzf, lazygit).
+- Commit messages: Conventional Commits (`feat:` / `fix:` …). Committing is done by the `committer` agent.
 
 ## Working with This Repository
 
-### When modifying configurations:
-1. Each tool's configuration is self-contained in its directory
-2. Test changes by running the tool's install script to update symlinks
-3. Platform-specific code should check for Darwin (macOS) or Linux
+1. Each tool's configuration is self-contained in its directory.
+2. Platform-specific code must check for Darwin (macOS) or Linux.
+3. When adding a new tool: create a directory, add configs, write an `install.sh` that symlinks them, and update the main `install.sh` / `install_linux.sh` if needed.
 
-### When adding new tools:
-1. Create a new directory for the tool
-2. Add configuration files
-3. Create an `install.sh` script that symlinks configurations to appropriate locations
-4. Update the main `install.sh` or `install_linux.sh` if needed
+## Claude Code Configuration (`claude/`)
 
-### Important Notes
-- Git is configured with GPG signing - ensure GPG is set up
-- The repository assumes `$HOME/dev` as the base for ghq-managed repositories
-- Tmux prefix is remapped to `Ctrl+s` (not the default `Ctrl+b`)
-- Many tools expect modern CLI replacements (lsd for ls, delta for diff, etc.)
+| Layer | Location | Role |
+|-------|----------|------|
+| Skills | `claude/skills/<name>/SKILL.md` | 方法論・知識のSSOT（on-demand） |
+| Commands | `claude/commands/*.md` | スキル/エージェントを起動する薄いオーケストレータ |
+| Agents | `claude/agents/*.md` | Task起動用ペルソナ（知識はスキル/ルールを参照） |
+| Rules | `claude/rules/**/*.md` | `paths:` frontmatter による条件付き制約 |
+| Hooks | `claude/hooks/*.ts` | Deno製（notify / format / skill-memory） |
 
-## Claude Code Integration
+**重複禁止の原則**: 同じ知識を複数レイヤーに書かない。コマンド・エージェントはSSOT（スキル・ルール）を参照する。
 
-### Custom Commands
-The `claude/` directory contains custom slash commands for Claude Code:
-- `/commit` - Intelligent commit creation with conventional commit format and emoji
-- `/review` - Comprehensive PR review with automated worktree management
-
-### Command Features
-- **Commit Command**: Automated pre-commit checks (lint, build, docs), conventional commit format with emoji, automatic commit splitting for complex changes
-- **Review Command**: Systematic 6-phase review process, automatic worktree creation, consistency analysis with existing codebase
-
-### Installation
-Run `cd claude && ./install.sh` to install Claude Code custom commands to `~/.config/claude/`
-
-## Self-Improvement Protocol
-
-### Learning from Mistakes
-
-When Claude makes a mistake that is corrected by the user:
-1. Understand the root cause of the mistake
-2. Propose a rule to prevent the same mistake
-3. If the user agrees, update this CLAUDE.md with the new rule
-
-Example prompt from user:
-> "このミスを二度としないように、CLAUDE.mdを更新して"
-
-### Project-Specific Notes
-
-For complex or long-running tasks, maintain notes in the project:
-1. Create a `notes/` directory if it doesn't exist
-2. Create PR-specific notes: `notes/pr-{number}.md`
-3. Update notes as the work progresses
-4. Include: decisions made, blockers encountered, solutions found
-
-### Adversarial Review Pattern
-
-When reviewing your own work or plans:
-1. First, create the plan or implementation
-2. Then, review it as a "senior engineer" would
-3. Ask tough questions: edge cases, error handling, performance
-4. Only proceed when the review passes
-
-Prompt example:
-> "このPRを厳しくレビューして。テストに合格するまでPRを出すな"
-
-## Parallel Workflows
-
-### Git Worktree Setup
-
-This dotfiles includes worktree management functions in zsh:
-- `wt` - List/switch worktrees with fzf
-- `wt-add <name>` - Create new worktree
-- `wt-rm <name>` - Remove worktree
-- `za`, `zb`, `zc`, `zd`, `ze` - Quick switch aliases
-
-### Recommended Workflow
-
-1. Main worktree: Primary development
-2. Worktree 'a': Feature work
-3. Worktree 'b': Bug fixes
-4. Worktree 'c': Analysis/investigation (read-only queries, logs)
-
-Run Claude Code in each worktree simultaneously for parallel development.
-
-## Agentic Architecture (Subagent Tips)
-
-### Using Subagents Effectively
-
-Add "use subagents" to the end of complex requests to have Claude allocate more computational resources:
-- Complex refactoring across multiple files
-- Large codebase analysis
-- Multi-step tasks with dependencies
-
-Example:
-> "このAPIの認証フローを全てリファクタリングして use subagents"
-
-### Available Custom Agents
-
-See `claude/agents/` for specialized agents:
-
-**開発系:**
-- `committer` - Git commit with conventional format
-- `planner` - Implementation planning
-- `code-reviewer` - Code quality review
-- `security-reviewer` - Security vulnerability detection
-- `tdd-guide` - Test-driven development guidance
-- `build-error-resolver` - Build/type error fixing
-- `architect` - System design and scalability
-- `refactor-cleaner` - Dead code detection and cleanup
-- `doc-updater` - Documentation generation/update
-- `e2e-runner` - Playwright E2E test management
-
-**プロダクト・戦略系:**
-- `executive-reviewer` - Strategic/business perspective review
-- `user-researcher` - User research and insight synthesis
-- `devils-advocate` - Strategy stress-testing and assumption validation
-
-## Custom Skills
-
-### Daily-Use Skills
-
-Create skills for tasks done 2+ times per day:
-
-| Skill | Purpose |
-|-------|---------|
-| `/techdebt` | Detect and remove duplicate/dead code |
-| `/review` | Comprehensive PR review |
-| `/design-intent` | Design intent review (WHY, trade-offs, ship judgment) |
-| `/commit` | Intelligent commit with conventional format |
-| `/tdd` | TDD workflow guidance |
-| `/build-fix` | Build error resolution |
-| `/write-prd` | PRD creation with Socratic questioning |
-| `/product-strategy` | Strategy with Rumelt's Kernel + DHM |
-| `/devils-advocate` | Stress-test plans/strategies/designs |
-| `/competitive-research` | Parallel agent competitive research |
-| `/analyze-data` | Structured data analysis workflow |
-| `/pptx` | Markdown to PowerPoint generation |
-| `/mvp-scaffolding` | MVP project scaffolding with Buy vs Build |
-| `/ship-check` | Pre-release product quality audit |
-| `/build-or-buy` | Build vs Buy decision documentation |
-| `/validate-idea` | Pre-code idea validation (6-sec test, payment test) |
-| `/launch-playbook` | Multi-platform launch strategy |
-| `/build-in-public` | Build in Public content strategy |
-
-### Skills vs Commands (関係性ガイド)
-
-| コマンド | 使用するスキル | 備考 |
-|---------|---------------|------|
-| `/impl` | `developing` | TDDワークフロー実行 |
-| `/refine-skill` | `refining-skills` | 既存スキルの経験駆動改善（validate-skill + .memory.md） |
-| `/skill-catalog` | （スクリプト直接） | 全スキルの健全性カタログ（advisory・refine/merge 候補） |
-| `/tdd` | `developing`, `writing-tests` | TDDサイクルガイド |
-| `/spec` | `analyzing-requirements`, `planning-tasks` | 設計→タスク生成 |
-| `/write-prd` | `write-prd` | ソクラテス式質問+マルチ視点レビュー |
-| `/product-strategy` | `product-strategy`, `competitive-research` | Rumelt's Kernel戦略策定 |
-| `/devils-advocate` | `devils-advocate` | 計画のストレステスト |
-| `/analyze-data` | `analyze-data` | ファネル/A/Bテスト分析 |
-| `/pptx` | `pptx` | Markdown→PowerPoint変換 |
-| `/mvp-scaffolding` | `mvp-scaffolding`, `build-or-buy` | MVPスタック選定+初期構築 |
-| `/ship-check` | `ship-check` | リリース前品質監査 |
-| `/design-intent` | `design-intent` | 設計意図・メンタルモデル共有レビュー |
-| `/build-or-buy` | `build-or-buy`, `competitive-research` | Build vs Buy意思決定 |
-| `/validate-idea` | `validate-idea` | コード前のアイデア検証 |
-| `/launch-playbook` | `launch-playbook` | マルチプラットフォームローンチ |
-| `/build-in-public` | `build-in-public` | Build in Publicコンテンツ戦略 |
-
-### 計画系スキルの使い分け
-
-| 状況 | 使うスキル | 出力先 |
-|------|-----------|--------|
-| シンプルなタスク（1-2日） | `plan-first` | `docs/plans/` |
-| 大規模な機能設計 | `analyzing-requirements` → `planning-tasks` | `docs/DESIGN.md` → `docs/TODO.md` |
-
-**迷ったら**: まず `plan-first` で軽く計画を書く。複雑だと気づいたら `analyzing-requirements` に切り替え。
-
-### プロダクト系スキルの使い分け
-
-| 状況 | 使うスキル | 出力先 |
-|------|-----------|--------|
-| 機能仕様の作成 | `write-prd` | `docs/prd-*.md` |
-| 戦略策定 | `product-strategy` | `docs/strategy-*.md` |
-| 計画のストレステスト | `devils-advocate` | 対話中 or レポート |
-| 競合・技術比較 | `competitive-research` | `docs/research-*.md` |
-| データ分析 | `analyze-data` | `docs/analysis-*.md` |
-| プレゼン生成 | `pptx` | `*.pptx` |
-| MVP初期構築 | `mvp-scaffolding` | `docs/scaffolding-*.md` |
-| Build vs Buy判定 | `build-or-buy` | `docs/decisions/build-or-buy-*.md` |
-| リリース前監査 | `ship-check` | `docs/ship-check-*.md` |
-| 設計意図レビュー | `design-intent` | `docs/design-intent-*.md` |
-| アイデア検証 | `validate-idea` | `docs/validation-*.md` |
-| ローンチ計画 | `launch-playbook` | `docs/launch-plan-*.md` |
-| コンテンツ戦略 | `build-in-public` | `docs/content-strategy-*.md` |
-
-**典型的なワークフロー:**
-1. `mvp-scaffolding` → スタック選定+Buy vs Build判定（新規プロジェクト時）
-2. `competitive-research` → 競合調査
-3. `product-strategy` → 戦略策定（内部で競合調査+Devil's Advocate実行）
-4. `write-prd` → 戦略に基づくPRD作成（内部でマルチ視点レビュー実行）
-5. `analyzing-requirements` → PRDから技術設計（DESIGN.md）
-6. `planning-tasks` → 設計からタスク分解（TODO.md）
-7. `pptx` → 戦略書やPRDからプレゼン生成
-8. `ship-check` → リリース前のプロダクト品質監査
-
-**インディー開発者ワークフロー:**
-```
-validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
-→ launch-playbook → build-in-public → analyze-data(Kill or Keep)
-```
-→ 詳細は `docs/indie-dev-roadmap.md` を参照
-
-### 文章規範スキル（横断適用）
-
-`japanese-tech-writing` は単一のワークフローを持たず、他スキルが生成する**日本語ドキュメントの文章品質**を律する横断スキル。整形（一文一行・脚注・コラム記法）、パラグラフライティング、論証の厳密さ、読み手の負荷管理、演出の抑制、LLM っぽい空句の禁止、冗長の排除、見出しの付け方を定める。
-
-| 項目 | 内容 |
-|------|------|
-| 適用タイミング | 日本語で技術書の章・草稿・記事・解説文を書く／推敲・リライトするとき（description のトリガーで自動起動） |
-| 参照元 | 文書生成系スキルの「関連スキル」節（write-prd, analyzing-requirements, planning-tasks, product-strategy, design-intent, competitive-research, analyze-data, build-or-buy, validate-idea, ship-check, mvp-scaffolding, launch-playbook, youtube-research, plan-first の14スキル） |
-| 非適用 | 社会発信・音声・スライド系（x-growth, build-in-public, zundamon-video, pr-video, pptx）は register が異なるため対象外 |
-| 出典 | [gist: k16shikano/fd287c…](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)（Unlicense / パブリックドメイン） |
-
-### レビュー系スキルの使い分け
-
-```
-/review          → 技術品質チェック（WHAT: コード品質、セキュリティ、テスト等）
-/design-intent   → 設計意図・出荷判断（WHY: なぜこの設計か、トレードオフ、メンタルモデル）
-/commit          → 両方パス後にコミット
-```
-
-| 状況 | 使うスキル | 目的 |
-|------|-----------|------|
-| コード変更のレビュー | `/review` | バグ・品質・セキュリティの自動チェック |
-| 設計判断の確認 | `/design-intent` | WHY・トレードオフの対話的共有 |
-| AI生成コードの検証 | `/design-intent` | 作者の理解度確認 |
-| 出荷可否判断 | `/review` + `/design-intent` | 技術品質 + 設計意図の両面で判断 |
-
-**スキル品質の2層**: `validate-skill`（`reviewing-skills/scripts/`）は決定論的・実行可能なゲート（frontmatter・name・行数・scripts テスト）。`reviewing-skills` は LLM による定性レビュー（「何を/いつ」「例の質」「用語一貫性」）。`/create-skill` は前者をゲート、後者を品質レビューとして両方走らせる。テスト用 fixtures は `scripts/fixtures/` に置けばゲートの対象外になる。
-
-**スキルのライフサイクル**: `/create-skill`（誕生）→ `validate-skill`＋`reviewing-skills`（評価）→ `.memory.md` へ経験蓄積 → `/refine-skill`（改善）→ `/skill-catalog`（俯瞰）。改善は編集までで確定は `/commit`。全体像・4役割・データフローは [docs/self-evolving-skills.md](docs/self-evolving-skills.md)（および上の「Self-Evolving Skills」節）を参照。
-
-### TDD系スキルの関係
-
-```
-developing (親スキル: TDDワークフロー全体)
-    └── writing-tests (サブスキル: テスト作成に特化)
-```
-
-- `developing`: RED→GREEN→REFACTOR サイクル + 設計原則
-- `writing-tests`: テスト命名、AAA/Given-When-Then、言語別パターン
-
-### Creating New Skills
-
-1. Create `claude/skills/<skill-name>/SKILL.md`
-2. Define triggers, workflow, and expected output
-3. Run `cd claude && ./install.sh` to deploy
-
-### Self-Evolving Skills（自己進化スキル）
-
-スキルを経験から自己改善させるライフサイクル（MUSE-Autoskill 適用）。全体像・データフロー・各サブプロジェクトの索引は **[docs/self-evolving-skills.md](docs/self-evolving-skills.md)** を参照。
-
-| 役割 | 道具 | 性質 |
-|------|------|------|
-| gate | `validate-skill`（`/create-skill` 内・手動） | 決定論ゲート（通らなければブロック） |
-| action | `refining-skills`（`/refine-skill`） | 既存スキルを経験駆動で改善 |
-| management | `catalog-skills`（`/skill-catalog`） | 全スキルの advisory 俯瞰（常に exit 0） |
-| qualitative | `reviewing-skills` | LLM 定性レビュー |
-| memory | `skill-memory.ts` フック | スキル固有の経験を `.memory.md` に注入・蓄積 |
+- スキル・コマンドの使い分け: [docs/skills-guide.md](docs/skills-guide.md)
+- スキルの自己進化ライフサイクル: [docs/self-evolving-skills.md](docs/self-evolving-skills.md)
+- 新しいスキルは `claude/skills/<name>/SKILL.md` に作成（`/create-skill` 推奨。500行以下・description にトリガーワード）
 
 ### Per-Skill Memory (`.memory.md`)
 
-各スキルは任意の `claude/skills/<name>/.memory.md`（gitignore・私的）に「そのスキル固有の運用知識」を蓄積する。MUSE-Autoskill の per-skill メモリをこの repo に適用したもの。
+各スキルは任意の `claude/skills/<name>/.memory.md`（gitignore・私的）にスキル固有の運用知識を蓄積する。
+読み込みは `skill-memory.ts` フックが自動で行う。スキル使用後、そのスキル固有の失敗原因・入力の癖・非自明なTipsを見つけたら日付付きで追記する（テンプレ: `claude/skills/shared/references/memory-template.md`）。
 
-**読み込み（自動）**: `skill-memory.ts` フックがスキル使用時に該当 `.memory.md` を自動注入する。手動操作は不要。
+- スキル自身の挙動・癖 → `.memory.md` / 問題・プロジェクト知識 → `agent-memory` スキル
+- 複数タスクで再現した教訓は `references/lessons.md`（committed）へ昇格し、`.memory.md` から削除する
 
-**書き込み（規約・あなたの判断）**: スキル使用後、そのスキル**固有の**以下を見つけたら `.memory.md` に日付付きで追記する（テンプレ: `claude/skills/shared/references/memory-template.md`）:
-- スキルが失敗し、原因と回避策を特定した（→ Failure Modes）
-- 入力に特別な前処理が必要だった（→ Input Quirks）
-- 非自明なより良い使い方を見つけた（→ Tips）
+## Self-Improvement Protocol
 
-記録しない: 一度きりの些末事、スキルと無関係な一般知識。
+ユーザーに訂正されたミスは、根本原因を理解した上で再発防止ルールを提案し、
+合意が得られたら適切なレイヤー（CLAUDE.md / rules / skill）に追記する。
+長期タスクのメモは `notes/pr-{number}.md` に残す（決定事項・ブロッカー・解決策）。
 
-**agent-memory との境界**:
-- *スキル自身の挙動・癖* → `.memory.md`（例: 「pptx は macOS でフォント埋込が落ちる」）
-- *問題・ドメイン・プロジェクト知識* → `agent-memory`（例: 「Issue #123 の JWT 調査結果」）
+## Parallel Workflows
 
-**昇格（手動）**: `.memory.md` の `Promotion Candidates` が複数タスクで再現し普遍的と確認できたら、`claude/skills/<name>/references/lessons.md`（committed）へ移し、`.memory.md` からは削除する。SKILL.md 本体には足さない（`reviewing-skills` の 500 行制限を圧迫しないため）。
-
-## Plan Mode Best Practice
-
-Follow the 80/20 rule:
-- **80% planning**: Design, understand requirements, identify edge cases
-- **20% implementation**: Execute the well-defined plan
-
-When stuck, return to plan mode:
-> "計画モードに戻って、この問題を再考して"
-
-## Voice Input (macOS)
-
-For faster prompting, use macOS dictation:
-- Press **fn** key twice to start dictation
-- Speak your prompt (3x faster than typing)
-- Results in more detailed, natural prompts
+zsh/fish に worktree 管理関数がある: `wt`（fzf切替）/ `wt-add <name>` / `wt-rm <name>` / `za`〜`ze`（クイック切替）。
+worktreeごとにClaude Codeを起動して並行開発できる。
