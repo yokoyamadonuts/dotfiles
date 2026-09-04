@@ -56,4 +56,14 @@ vim.env.STUB_START_FAILS = nil
 t.eq(name, nil, "failed start returns no name")
 t.eq(err, "pane is not an available shell", "start error surfaced")
 
+local fleet = require("modules.ai.fleet")
+local sorted = fleet.sort_agents({
+  { name = "c", agent_status = "idle" },
+  { name = "a", agent_status = "blocked" },
+  { name = "b", agent_status = "working" },
+  { name = "d", agent_status = "idle" },
+})
+t.eq(vim.tbl_map(function(a) return a.name end, sorted), { "a", "b", "c", "d" },
+  "blocked first, then working, then idle by name")
+
 t.finish()

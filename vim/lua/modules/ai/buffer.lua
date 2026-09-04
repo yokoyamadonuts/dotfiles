@@ -47,42 +47,23 @@ local function setup_keymaps(bufnr, config)
   if config.on_interrupt then
     vim.keymap.set("n", "<C-x><C-x>", function()
       config.on_interrupt()
-    end, vim.tbl_extend("force", opts, { desc = "Interrupt process in tmux pane" }))
+    end, vim.tbl_extend("force", opts, { desc = "Interrupt the agent" }))
   end
 
-  -- <C-d>: tmuxペインを下にスクロール
-  if config.on_scroll_down then
-    vim.keymap.set("n", "<C-d>", function()
-      config.on_scroll_down()
-    end, vim.tbl_extend("force", opts, { desc = "Scroll tmux pane down" }))
+  -- <C-o>: エージェントの出力を取り込んで開く
+  -- herdr にスクロールコマンドが無いため、遠隔スクロールの代わりに中身を持ってくる。
+  -- これに伴い <C-d> / <C-u> / <C-n> / <C-p> は nvim 標準の挙動に戻る。
+  if config.on_load_output then
+    vim.keymap.set("n", "<C-o>", function()
+      config.on_load_output()
+    end, vim.tbl_extend("force", opts, { desc = "Load agent output into a buffer" }))
   end
 
-  -- <C-u>: tmuxペインを上にスクロール
-  if config.on_scroll_up then
-    vim.keymap.set("n", "<C-u>", function()
-      config.on_scroll_up()
-    end, vim.tbl_extend("force", opts, { desc = "Scroll tmux pane up" }))
-  end
-
-  -- <C-n>: tmuxペインを1行下にスクロール
-  if config.on_scroll_line_down then
-    vim.keymap.set("n", "<C-n>", function()
-      config.on_scroll_line_down()
-    end, vim.tbl_extend("force", opts, { desc = "Scroll tmux pane down 1 line" }))
-  end
-
-  -- <C-p>: tmuxペインを1行上にスクロール
-  if config.on_scroll_line_up then
-    vim.keymap.set("n", "<C-p>", function()
-      config.on_scroll_line_up()
-    end, vim.tbl_extend("force", opts, { desc = "Scroll tmux pane up 1 line" }))
-  end
-
-  -- <S-Tab>: Shift+Tabをtmux側に送信
+  -- <S-Tab>: Shift+Tabをエージェントに送信
   if config.on_send_shift_tab then
     vim.keymap.set("n", "<S-Tab>", function()
       config.on_send_shift_tab()
-    end, vim.tbl_extend("force", opts, { desc = "Send Shift+Tab to tmux pane" }))
+    end, vim.tbl_extend("force", opts, { desc = "Send Shift+Tab to the agent" }))
   end
 end
 
@@ -130,11 +111,8 @@ end
 --   - name: string バッファ名（例: "[Claude Input]"）
 --   - filetype: string ファイルタイプ（例: "markdown"）
 --   - on_submit: function(content, bufnr) テキスト送信時のコールバック
---   - on_scroll_down: function() 下スクロール時のコールバック
---   - on_scroll_up: function() 上スクロール時のコールバック
 --   - on_interrupt: function() プロセス割り込み時のコールバック
---   - on_scroll_line_down: function() 1行下スクロール時のコールバック
---   - on_scroll_line_up: function() 1行上スクロール時のコールバック
+--   - on_load_output: function() 出力取り込み時のコールバック
 --   - on_send_shift_tab: function() Shift+Tab送信時のコールバック
 -- @return number 作成/再利用されたバッファ番号
 function M.create_input_buffer(config)
