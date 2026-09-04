@@ -94,4 +94,63 @@ function M.parse(res, raw)
   return decoded, nil
 end
 
+-- コルーチンごとの resume 関数。コルーチンが GC されたら一緒に消える。
+local resumers = setmetatable({}, { __mode = "k" })
+
+-- fn をコルーチンとして走らせる。fn の中では await / sleep が使える。
+-- @param fn function
+function M.async(fn)
+  local co = coroutine.create(fn)
+  local function step(...)
+    local ok, err = coroutine.resume(co, ...)
+    if not ok then
+      local message = tostring(err)
+      vim.schedule(function()
+        vim.notify("herdr async error: " .. message, vim.log.levels.ERROR)
+      end)
+    end
+  end
+  resumers[co] = step
+  step()
+end
+
+local function current_resumer(caller)
+  local co = coroutine.running()
+  local resume = co and resumers[co]
+  if not resume then
+    error(caller .. " must be called inside herdr.async", 2)
+  end
+  return resume
+end
+
+-- herdr コマンドを実行し、終わるまでコルーチンを中断する。nvim はブロックしない。
+-- @param args table コマンド引数の配列（"herdr" は含めない）
+-- @param opts table|nil {raw=boolean}
+-- @return any|nil, string|nil
+function M.await(args, opts)
+  local resume = current_resumer("herdr.await")
+  local cmd = { M.bin }
+  vim.list_extend(cmd, args)
+
+  vim.system(cmd, { text = true }, function(res)
+    -- vim.system のコールバックは fast event context なので schedule する
+    vim.schedule(function()
+      resume(res)
+    end)
+  end)
+
+  local res = coroutine.yield()
+  return M.parse(res, opts and opts.raw)
+end
+
+-- ms ミリ秒だけコルーチンを中断する（シェル待ちの poll 用）。
+-- @param ms number
+function M.sleep(ms)
+  local resume = current_resumer("herdr.sleep")
+  vim.defer_fn(function()
+    resume()
+  end, ms)
+  coroutine.yield()
+end
+
 return M

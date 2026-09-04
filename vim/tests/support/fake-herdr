@@ -1,0 +1,40 @@
+#!/bin/sh
+# テスト用の herdr スタブ。引数に応じて定型 JSON を返す。
+case "$1 $2" in
+  "agent list")
+    echo '{"id":"cli:agent:list","result":{"agents":[{"name":"demo","agent_status":"idle","cwd":"/tmp","pane_id":"w1:p1"}],"type":"agent_list"}}'
+    exit 0
+    ;;
+  "agent boom")
+    echo '{"error":{"code":"stub_boom","message":"stub failed on purpose"}}'
+    exit 1
+    ;;
+  "tab create")
+    echo '{"id":"cli:tab:create","result":{"root_pane":{"pane_id":"w1:p9"},"tab":{"tab_id":"w1:t9"},"type":"tab_created"}}'
+    exit 0
+    ;;
+  "pane process-info")
+    # STUB_BUSY_FILE が未作成なら初回だけ busy を返す
+    if [ -n "$STUB_BUSY_FILE" ] && [ ! -f "$STUB_BUSY_FILE" ]; then
+      touch "$STUB_BUSY_FILE"
+      echo '{"result":{"process_info":{"foreground_processes":[{"pid":1},{"pid":2}],"shell_pid":2}}}'
+      exit 0
+    fi
+    echo '{"result":{"process_info":{"foreground_processes":[{"pid":2}],"shell_pid":2}}}'
+    exit 0
+    ;;
+  "agent start")
+    if [ -n "$STUB_START_FAILS" ]; then
+      echo '{"error":{"code":"agent_pane_busy","message":"pane is not an available shell"}}'
+      exit 1
+    fi
+    echo '{"id":"cli:agent:start","result":{"agent":{"name":"'"$3"'"},"type":"agent_started"}}'
+    exit 0
+    ;;
+  "tab close")
+    echo '{"id":"cli:tab:close","result":{"type":"tab_closed"}}'
+    exit 0
+    ;;
+esac
+echo '{"error":{"code":"stub_unhandled","message":"stub does not handle: '"$*"'"}}'
+exit 1
