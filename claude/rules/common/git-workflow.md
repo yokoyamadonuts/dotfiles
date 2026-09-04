@@ -71,40 +71,8 @@ git diff origin/main...HEAD
 
 ## 開発フロー
 
-### 1. 計画フェーズ
-
-```bash
-# planner エージェントを使用
-# 依存関係とフェーズをマッピング
-```
-
-### 2. TDD フェーズ
-
-```bash
-# RED: 失敗するテストを書く
-npm test -- --watch
-
-# GREEN: 実装
-# REFACTOR: 改善
-
-# カバレッジ確認
-npm test -- --coverage
-# 80%以上必須
-```
-
-### 3. レビューフェーズ
-
-```bash
-# 実装後すぐにレビュー
-/review
-```
-
-### 4. コミットフェーズ
-
-```bash
-# Conventional Commit 形式
-git commit -m "feat: add user authentication"
-```
+計画（planner）→ TDD（developingスキル）→ レビュー（/review）→ コミット（committerエージェント）の順。
+各フェーズの方法論はそれぞれのSSOTを参照する（このファイルでは再説明しない）。
 
 ## ブランチ戦略
 
