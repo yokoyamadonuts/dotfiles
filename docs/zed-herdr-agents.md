@@ -26,6 +26,22 @@ Zed と herdr を役割分担して、複数の Claude Code エージェント�
 | `agent-fleet` | 艦隊の一覧と状態を表示（`herdr agent list`） |
 | `agent-open [name]` | worktree（省略時は現在地）を Zed で開く |
 
+## nvim 連携
+
+| コマンド | 動作 |
+|----------|------|
+| `:Claude [args]` / `<leader>ac` | cwd のエージェントを用意し入力バッファを開く |
+| `:Codex [args]` / `<leader>xx` | 同上（Codex） |
+| `:AgentFleet` / `<leader>af` | 艦隊を telescope で一覧。`<CR>` フォーカス / `<C-o>` 出力 / `<C-p>` 送信 |
+| `:AgentOutput [name]` | エージェントの出力をバッファに取り込む |
+| `:AgentAdd <name> [branch]` | worktree を作りエージェントを配置 |
+
+入力バッファ: `<CR>` 送信 / `q` 閉じる / `<C-x><C-x>` 割り込み / `<C-o>` 出力取り込み / `<S-Tab>` Shift+Tab 送信。
+
+エージェント名は cwd から導出される（`~/dev/dotfiles` → `dotfiles-claude`）。worktree ごとに別名になるので、そのまま艦隊の一員として並ぶ。
+
+テスト: `./vim/tests/run.sh`（`nvim -l` で走る。herdr 実機は不要）。
+
 ## 典型ワークフロー
 
 ```fish
