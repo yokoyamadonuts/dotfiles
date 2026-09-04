@@ -41,6 +41,14 @@
 
 ```lua
 -- 最小のアサーションヘルパ。nvim -l から dofile して使う。
+--
+-- nvim の require は package.path ではなく runtimepath を探す。~/.config/nvim は
+-- メインチェックアウトへの symlink なので、何もしないと worktree で走らせても
+-- メイン側のモジュールを読んでしまう。spec が置かれている checkout の vim/ を
+-- runtimepath の先頭に差し込み、常に「隣にあるコード」をテストする。
+local here = debug.getinfo(1, "S").source:sub(2):match("(.*)/")
+vim.opt.runtimepath:prepend(here .. "/../../vim")
+
 local M = { total = 0, failures = 0 }
 
 function M.eq(actual, expected, label)
@@ -1333,8 +1341,13 @@ git rm vim/lua/modules/ai/tmux.lua
 
 - [ ] **Step 3: 全モジュールが読み込めることを確認する**
 
+`--cmd` は config 読み込みより前に走るので、そこで runtimepath を差し替える。
+これをしないと `~/.config/nvim` 経由でメインチェックアウトの `init.lua` が読まれる。
+
 ```bash
-cd /Volumes/Partition_Case_Sensitive/Workspace/dotfiles && nvim --headless -c 'lua require("modules.ai").setup(); print("setup ok")' -c 'qa!' 2>&1 | tail -3
+cd "$(git rev-parse --show-toplevel)" && nvim --headless \
+  --cmd "set runtimepath^=$(pwd)/vim" \
+  -c 'lua require("modules.ai").setup(); print("setup ok")' -c 'qa!' 2>&1 | tail -3
 ```
 
 Expected: `setup ok`
@@ -1370,6 +1383,11 @@ The tmux backend is gone."
 ### Task 9: 実機スモーク
 
 非同期チェーン全体は実 herdr でしか確かめられない。以下を手で通す。
+
+**前提: Task 8 までを master にマージしてから行う。** `~/.config/nvim` はメイン
+チェックアウトへの symlink なので、worktree のまま `herdr` の中で nvim を起動しても
+古いコードが読まれる。Task 1〜8 のテストは worktree 内で完結するが、実機スモークだけは
+マージ後でないと意味がない。
 
 **Files:**
 - Modify: `docs/zed-herdr-agents.md`（nvim 連携の節を追加）
