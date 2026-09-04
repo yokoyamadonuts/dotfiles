@@ -110,7 +110,7 @@ Skillツールを使用してskill-creatorスキルを実行します：
 
 ```javascript
 Skill({
-  skill: "example-skills:skill-creator",
+  skill: "anthropic-skills:skill-creator",
   args: "[スキル名] [スキルの説明]"
 })
 ```
