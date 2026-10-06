@@ -1,0 +1,142 @@
+---
+name: formal-methods-reconciler
+description: 形式手法を使って、ソフトウェアの仕様、ドキュメント、テスト、設定、コード、ログ、インシデントを突き合わせるときに使う。Codex が主張を抽出し、ドキュメントと実装のどちらを真実の源にするかを決め、Z3、Alloy、TLA+、P、Dafny、MoonBit prove、Lean、Rocq、Why3、Verus、CBMC、Tamarin、ProVerif などから適切な道具を選び、最小限の有用なモデルを作り、検証器の実行または実行計画を立て、SAT/UNSAT、trace、証明失敗、proof obligation をドメインの言葉での確認質問と回帰ガードに翻訳する。
+---
+
+<!--
+Vendored verbatim from https://github.com/mizchi/skills (MIT: the repository README states
+"Skills without an explicit license default to MIT at the repository owner's discretion").
+Source: formal-methods-reconciler/SKILL-ja.md @ 62f580819410cb1d398e4d7f234bbd0aad1c1a15
+       formal-methods-reconciler/references/*.md @ same commit (tool-selection, domain-ledger,
+       research-patterns, reference-implementations).
+Not vendored: README.md, agents/openai.yaml, evals/, and the companion skill
+formal-methods-drift-guard (it starts once a model/CI check exists; install it then with
+  npx skills add mizchi/skills --skill formal-methods-drift-guard).
+Re-sync:
+  for f in SKILL-ja.md references/tool-selection.md references/domain-ledger.md \
+           references/research-patterns.md references/reference-implementations.md; do
+    curl -sL https://raw.githubusercontent.com/mizchi/skills/main/formal-methods-reconciler/$f
+  done
+Do not hand-edit; upstream is authoritative. Pair with vcsdd-lite Phase 5 (形式硬化).
+-->
+
+# Formal Methods Reconciler
+
+この skill は、曖昧な正しさの懸念を、小さな形式手法チェックとドメインの人間が読める判断記録に変換するために使う。
+
+基本姿勢: LLM は候補モデルを提案し修復する。正しさを判定するのは solver、model checker、verifier、proof assistant である。最終結果は、人間が判断できるようにドメインの言葉へ戻す。
+
+これは初回モデル化と突き合わせ用の skill である。すでに有用な形式モデル、
+CI verifier、期待 result、または lock 済み domain decision があり、その後の
+spec/code/log 変更と揃え続けるタスクなら `formal-methods-drift-guard` に切り替える。
+
+## Workflow
+
+1. **真実の源を選ぶ。**
+   - 信頼できる仕様、ドキュメント、ADR、API contract がある場合は、それを期待契約として扱い、コードを照合対象にする。
+   - 仕様が無い、または信頼できない場合は、コード、テスト、設定、ログを de-facto behavior として扱う。ただし自動的に正しいとはみなさない。
+   - 両者が食い違う場合は、一人で決めない。ドメイン質問を作る。
+
+2. **ツールを選ぶ前に主張を抽出する。**
+   - 宣言された intent と暗黙の挙動を分ける。
+   - 主張は allowed、forbidden、eventually happens、never happens、equivalent、reachable、unreachable、preserves invariant として抽出する。
+   - empty、missing、error、timeout、retry、crash の挙動を明示的に記録する。
+
+3. **問いの形を分類する。**
+   - Pure predicate: `input -> Bool`。
+   - Relation: user、role、resource、tenant、ownership、graph。
+   - State transition: lifecycle、retry、crash、queue、eventual。
+   - Message protocol: actor、typed event、request/response schedule。
+   - Sequential code contract: pre/postcondition、loop invariant、representation invariant。
+   - Universal theorem: unbounded inductive property、または永続的な数学的法則。
+   - Security protocol: adversarial message system、secrecy、authentication。
+
+4. **最小で適切なツールを選ぶ。**
+   - ツール選定が自明でない場合は `references/tool-selection.md` を読む。
+   - 有用な反例を出せる最小のモデルを優先する。
+   - 速い config バグ探しに Lean/Rocq を使わない。時間的 interleaving に Z3 を使わない。単純な述語整合性に TLA+ を使わない。
+
+5. **最小モデルを作る。**
+   - その性質を定義していない限り、I/O、framework、database、UI は削る。
+   - 対象の主張に必要な observable value、state variable、action、relation、invariant だけをモデル化する。
+   - 強すぎるモデルを検出するため、positive sanity case を入れる。
+   - 可能なら broken variant を入れ、チェックが load-bearing であることを示す。
+
+6. **verifier feedback loop を回す。**
+   - compiler、verifier、model checker の出力を修復 oracle として使う。
+   - まず syntax error と modeling mistake を直す。
+   - ドメイン判断が変わっていない限り、緑にするためだけに property を弱めない。
+   - 反例はドメインレビュー用の witness として保存する。
+
+7. **witness を実装で再現する。**
+   - モデルの反例は、まだモデルについての主張であり、コードについての主張ではない。
+   - witness を強制する実装のテストを書く。同じ入力、同じ関係のインスタンス、または barrier、crash の注入、止めた時計で作った同じ実行順を使う。
+   - テストが同じように落ちれば、witness は実在するバグであり、そのテストを regression guard にする。
+   - 修正版も実装で確かめる。緑のモデルも、モデルについての主張にすぎない。
+   - どちらの向きでも実装と食い違えば、まずモデルのバグとして扱う。実行環境と食い違う前提 (分離レベル、ロックの意味、retry policy、provider の保証) を見直し、モデルを直して両方を再実行する。
+   - モデルが小さく信頼できるなら、test oracle として残す。モデルの witness や model checker の trace を実装のテストケースとして再生するか、実行可能なモデルと実装を突き合わせる。
+
+8. **結果をドメインの言葉へ翻訳する。**
+   - `sat`、`unsat`、trace、proof failure で止めない。
+   - 誰が何をできるのか、どの順序が受理されるのか、どの config が dead なのか、どの crash sequence がデータを失うのかを述べる。
+   - 出力テンプレートには `references/domain-ledger.md` を使う。
+
+9. **決定を lock する。**
+   - 反例が意図通りなら、docs/specs を更新し、明確化した挙動の regression guard を追加する。
+   - 意図していないなら、bug として file/fix し、model/check を CI に残す。
+   - 不明なら、最小 witness と domain-owner question を出す。
+
+## Reporting Discipline
+
+ドメイン上の不確実性と、実行上の不確実性を分ける。
+
+- Domain question は成果物の一部である。未記載の empty value、missing fail-mode definition、product-policy choice、spec/code disagreement など、owner decision が必要なものは domain question として扱う。
+- Self-report unclear point は、この skill を正しく適用する妨げになったものだけに使う。たとえば repository access が無い、参照ファイルが読めない、user scope が曖昧、明示的に実行を求められた verifier が実行できない、など。
+- 意図的に残した domain question を self-report unclear point にしない。ledger/domain-question section に置く。
+- ユーザーが model/check plan を求めており、runnable repo や verifier runtime を与えていない場合は、正確な check plan を立てれば十分。trace や SAT/UNSAT 予想は planned/hand-derived であり machine-confirmed ではないと明示し、実行していないことを unclear point として数えない。
+- ユーザーが verifier の実行を明示的に求め、かつそれが利用できない場合は、self-report unclear point または task blocker として記録する。
+
+## LLM Role Boundary
+
+LLM を使ってよいもの:
+
+- claim extraction
+- tool selection
+- first-pass formalization
+- counterexample explanation
+- repair proposal
+- domain-language wording
+
+LLM を使ってはいけないもの:
+
+- correctness の source of truth
+- proof の final judge
+- solver/model-checker/prover output の代替
+- domain-owner decision の代替
+
+## Research-Informed Patterns
+
+自動化 workflow を設計または改善するときは `references/research-patterns.md` を読む。次を優先する。
+
+- formal code generation の前に structured planning を行う
+- verifier-guided repair loop を使う
+- repository-level work では repo context の retrieval を使う
+- generated annotation には test/log/trace oracle を使う
+- theorem proving では subgoal decomposition を使う
+- すべての claim に epistemic status を明示する
+
+## Reference Implementations
+
+このワークフローを実際に動く形で示した例は `references/reference-implementations.md` を読む。eval シナリオごとに 1 つずつと、broken variant、sanity case、実装での再現、モデルの前提の修正を示す playground の use case を載せている。
+
+## Output Contract
+
+常に、次のいずれかの成果物を残すことを目指す。
+
+- repo 内の formal check と passing/failing command
+- ドメイン用語に翻訳した counterexample witness
+- regression guard candidate
+- witness を再現する実装のテスト、または再現しなかったことと、どのモデルの前提が誤っていたかの記録
+- 簡潔な ledger entry: source、implementation observation、model question、machine result、witness、reproduction、domain question、decision、lock
+
+形式モデルを作る価値がない場合は、その理由を述べ、より安い check を提案する。

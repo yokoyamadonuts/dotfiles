@@ -292,3 +292,4 @@ takt list
 - **developing**: TDDワークフロー（taktのdefaultピースと補完関係）
 - **reviewing-skills**: スキルのレビュー（taktのreviewピースとは別用途）
 - **plan-first**: 計画フェーズの設計（taktのplanMovementと類似の思想）
+- **designing-ai-loop**: ピースの完了条件とループモニターの上限を、数値ゴール・停止条件・エスカレーション基準から決めるとき（takt は実行ハーネス、ゴール設計は本スキル）

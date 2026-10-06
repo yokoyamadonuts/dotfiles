@@ -436,6 +436,9 @@ AIにほぼ任せて最速でプロトタイプを出すアプローチ。コー
 
 **本スキルとの関係**: developingはTDDワークフロー全体（+品質基準の言語化）を管理し、writing-testsはその中のテスト作成部分を詳細化するサブスキル。
 
+### designing-ai-loop
+`docs/quality-bar.md` の品質基準（フェーズ別カバレッジ・リスク別必須テスト）は、自律ループの評価指標の入力になる。「AI に任せて回す」段階では designing-ai-loop で指標の現在値・目標値・停止条件・エスカレーション基準を決める。
+
 ## リソース
 
 ### references/architecture-patterns.md

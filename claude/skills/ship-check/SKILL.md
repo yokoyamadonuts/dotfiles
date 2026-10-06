@@ -329,7 +329,8 @@ rg "catch.*console\.(error|log)" --type ts --type tsx
 ## 関連スキル
 
 - **developing**: コードレベルの品質（lint/test/build）を担当
-- **designing-refactoring**: コード構造の改善を担当
+- **`/techdebt`（refactor-cleaner エージェント）**: 重複・デッドコード・未使用依存の検出と除去を担当
+- **exploring-improvements**: 視点を固定した改善点の探索と Umbrella Issue 化。監査で FAIL/WARN になった領域の深掘りに使う
 - **devils-advocate**: 戦略レベルの検証を担当
 - **security-reviewer エージェント**: 本格的なセキュリティレビューが必要な場合
 - **japanese-tech-writing**: 監査レポートの所見・要約を執筆・推敲する際の日本語文章規範

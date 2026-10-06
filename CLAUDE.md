@@ -321,6 +321,24 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 
 **スキルのライフサイクル**: `/create-skill`（誕生）→ `validate-skill`＋`reviewing-skills`（評価）→ `.memory.md` へ経験蓄積 → `/refine-skill`（改善）→ `/skill-catalog`（俯瞰）。改善は編集までで確定は `/commit`。全体像・4役割・データフローは [docs/self-evolving-skills.md](docs/self-evolving-skills.md)（および上の「Self-Evolving Skills」節）を参照。
 
+### ループ系スキルの使い分け（AI コーディングループ）
+
+出典: mizchi「俺のAIプログラミング手法 (2026/10/05)」。人間は「判断基準・評価指標・検証」を設計し、AI は数値ゴールに向けて自律ループで回す。設計の経緯と既存スキルの精査結果は [docs/superpowers/specs/2026-10-06-ai-coding-loop-skills-design.md](docs/superpowers/specs/2026-10-06-ai-coding-loop-skills-design.md)。
+
+```
+exploring-improvements  →  designing-ai-loop  →  実行ハーネス（ralph-loop / /loop / takt / herdr-swarm）
+（視点で仕事を見つける）    （数値ゴール・停止条件・エスカレーションを決める）
+```
+
+| 状況 | 使うスキル | 出力先 |
+|------|-----------|--------|
+| 改善点を視点（SRE / セキュリティ攻撃側 / 性能 / 保守性）で洗い出したい | `exploring-improvements` | GitHub Umbrella Issue |
+| AI に任せられるか判定し、評価指標・停止条件・エスカレーションを決めたい | `designing-ai-loop` | `docs/loops/<name>.md` |
+| ループを実際に回したい | `/ralph-wiggum:ralph-loop`（単一プロンプト反復）/ `takt-orchestration`（YAML ピース）/ `herdr-swarm`（並列） | — |
+| 仕様・設定・並行処理の正しさを形式手法で突き合わせたい | `formal-methods-reconciler`（`vcsdd-lite` Phase 5 から参照） | 形式モデル＋反例テスト＋ドメイン語の台帳 |
+
+**境界**: `developing` の `docs/quality-bar.md` はテスト品質の基準（ループ指標の入力）。`ship-check` / `qa-testing` はリリース判定の監査であり探索ではない。スキル自体の精査観点（数値化・ペルソナより視点・既知知識の再掲禁止・失敗分類・鮮度）は `reviewing-skills/references/best-practices.md` §9。
+
 ### TDD系スキルの関係
 
 ```
