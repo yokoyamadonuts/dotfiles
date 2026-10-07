@@ -1,6 +1,6 @@
 ---
 name: designing-ai-loop
-description: AI コーディングエージェントに仕事を任せて自律ループ（ralph-loop / /loop / takt、記事の /goal 型）で回す前に、「AI に任せられるか」「完了を数値でどう測るか」「いつ止めて、いつ人を呼ぶか」を決めてループ定義書 `docs/loops/<name>.md` を書くときに使う。「ループを設計して」「評価指標を決めて」「ゴールを数値化して」「AI に任せられるか判定して」「夜間に自走させたい」「/goal 用のゴールを作って」「何を自動化できるか」などで起動。実行ハーネスの構築（takt のピース作成・herdr の操作）やテスト品質の基準（developing の quality-bar）ではなく、ループの入口（委譲判定・指標）と出口（停止・エスカレーション）の判断基準を決める工程。
+description: AI コーディングエージェントに仕事を任せて自律ループ（/goal / ralph-loop / /loop / takt）で回す前に、「AI に任せられるか」「完了を数値でどう測るか」「いつ止めて、いつ人を呼ぶか」を決めてループ定義書 `docs/loops/<name>.md` を書くときに使う。「ループを設計して」「評価指標を決めて」「ゴールを数値化して」「AI に任せられるか判定して」「夜間に自走させたい」「/goal 用のゴールを作って」「何を自動化できるか」などで起動。実行ハーネスの構築（takt のピース作成・herdr の操作）やテスト品質の基準（developing の quality-bar）ではなく、ループの入口（委譲判定・指標）と出口（停止・エスカレーション）の判断基準を決める工程。
 ---
 
 # AI ループ設計（Designing AI Loop）
@@ -74,13 +74,14 @@ description: AI コーディングエージェントに仕事を任せて自律�
 
 | 形 | 起動 |
 |----|------|
-| 同じ指示を目標達成まで繰り返す（記事の /goal 相当） | `/ralph-wiggum:ralph-loop "<指示>" --max-iterations N --completion-promise "<主指標が目標に達した旨>"` |
+| 完了条件を満たすまで回す（記事の /goal そのもの。別モデルが毎ターン条件を判定） | `/goal <条件>`。条件は「測れる終了状態＋確認方法＋守る制約」、例: `/goal eslint の warning が 0 件で vitest が exit 0。infra/ は変更しない。or stop after 20 turns` |
+| 同じ指示を固定回数まで繰り返す | `/ralph-wiggum:ralph-loop "<指示>" --max-iterations N --completion-promise "<主指標が目標に達した旨>"` |
 | 一定間隔で同じコマンド | `/loop <interval> <command>` |
 | 多段のワークフロー（計画 → 実装 → レビュー） | `takt-orchestration` |
 | 干渉しない複数レーンを並列 | `herdr-swarm` / `superpowers:dispatching-parallel-agents` |
 
 - 進捗の状態は入力 Issue のチェックボックスに持たせる。1 イテレーション = 1 項目 = 1 PR（または 1 コミット）。
-- `--completion-promise` は「真になったときだけエージェントが出力する定型句」。主指標の目標到達をそのまま文にする（例: `ESLint warning 数が 0 で、テスト成功数が 418 以上`）。
+- `/goal` の条件と `--completion-promise` は、どちらも主指標の目標到達をそのまま文にする（例: `ESLint warning 数が 0 で、テスト成功数が 418 以上`）。`/goal` は評価モデルが会話に現れた結果だけを見るので、計測コマンドを実行してその出力を会話に出す指示を含める。
 - 最初は手動で起動して回す。スケジューラ化（cron / launchd）は成功した後に入力の Issue へ積む。
 
 スクリプト・CI 設定・権限設定が必要なら、それは **ループの最初のタスク** として入力の Issue に積む。定義書には書かない。
@@ -120,7 +121,8 @@ description: AI コーディングエージェントに仕事を任せて自律�
 - コンテキスト不足 → `.claude/rules` に判断基準を足す / 権限不足 → 代行地点にする / 性能不足 → 記録して寝かせる
 
 ## 起動
-/ralph-wiggum:ralph-loop "Issue #42 を上から順に、1 PR 1 rule で ESLint warning を減らす。⚠️ は着手せず報告" --max-iterations 10 --completion-promise "ESLint warning 数が 0 で、テスト成功数が 418 以上"
+/goal Issue #42 を上から順に 1 PR 1 rule で処理し、`eslint . -f json | jq '[.[].warningCount] | add'` が 0、`vitest run` の成功数が 418 以上になる。⚠️ の項目は着手せず報告する。or stop after 10 turns
+（固定回数で回すなら: /ralph-wiggum:ralph-loop "..." --max-iterations 10 --completion-promise "ESLint warning 数が 0 で、テスト成功数が 418 以上"）
 ```
 
 ## 赤信号（形が崩れている兆候）
@@ -140,6 +142,6 @@ description: AI コーディングエージェントに仕事を任せて自律�
 - **exploring-improvements**: 視点で改善点を探し、Umbrella Issue に束ねる。本スキルの入力
 - **developing**: `docs/quality-bar.md`（フェーズ別カバレッジ・リスク別必須テスト）は指標の入力
 - **plan-first**: 1 回限りの実装計画。繰り返し回すなら本スキル
-- **takt-orchestration** / **herdr-swarm** / `/ralph-wiggum:ralph-loop`: 実行ハーネス。定義書を渡す先
+- `/goal` / `/ralph-wiggum:ralph-loop` / **takt-orchestration** / **herdr-swarm**: 実行ハーネス。定義書を渡す先
 - **formal-methods-reconciler**: 並行処理・権限・設定の正しさを指標（反例数）にするとき
 - **vcsdd-lite**: Phase 6 の収束シグナルを停止条件に流用できる

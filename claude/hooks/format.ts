@@ -1,6 +1,7 @@
 import $ from "jsr:@david/dax";
 import { extname } from "jsr:@std/path";
 import type {
+  BashToolResponse,
   FileModificationToolParams,
   PostToolUseHookData,
 } from "./types.ts";
@@ -76,8 +77,7 @@ async function main() {
     // Handle different tool types
     switch (data.tool_name) {
       case "Write":
-      case "Edit":
-      case "MultiEdit": {
+      case "Edit": {
         // Check if tool_input exists
         if (!data.tool_input) {
           return;
@@ -85,6 +85,17 @@ async function main() {
 
         const filePath = data.tool_input.file_path;
         if (filePath) {
+          await formatFile(filePath);
+        }
+        break;
+      }
+
+      case "Bash": {
+        // Bash-made edits (auto mode): Claude Code lists the changed files in
+        // tool_response.bashEditDiff (best effort, v2.1.269+). Absent → no-op.
+        const files = (data.tool_response as BashToolResponse | undefined)
+          ?.bashEditDiff?.changedFiles ?? [];
+        for (const filePath of files) {
           await formatFile(filePath);
         }
         break;

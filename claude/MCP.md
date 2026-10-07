@@ -1,89 +1,48 @@
 # MCP (Model Context Protocol) 設定
 
-Claude CodeでMCPサーバーを使用するための設定ガイド。
+Claude Code で MCP サーバーを使うための設定ガイド。
 
-## 概要
+## 設定の置き場所（Claude Code が実際に読む場所）
 
-- `mcp.json.template` - テンプレートファイル（dotfilesで管理）
-- `~/.config/claude/mcp.json` - 実際の設定ファイル（install.shで生成）
+| スコープ | ファイル | 追加コマンド | 用途 |
+|---------|---------|-------------|------|
+| user | `~/.claude.json`（Claude Code が管理。手で編集しない） | `claude mcp add --scope user <name> -- <cmd>` | このマシン全体で使うサーバー |
+| project | `<repo>/.mcp.json`（コミットして共有） | `claude mcp add --scope project <name> -- <cmd>` | リポジトリ固有のサーバー |
+| local | `<repo>/.claude/settings.local.json`（gitignore） | `claude mcp add --scope local <name> -- <cmd>` | 自分だけ・そのリポだけ |
 
-## セットアップ
+`~/.config/claude/mcp.json` は Claude Code の読み込み対象ではない（旧テンプレートは廃止）。
 
-```bash
-cd claude && ./install.sh
-```
+project スコープの `.mcp.json` を無確認で有効にするには、`claude/settings.json` の `enableAllProjectMcpServers: true`（設定済み）を使う。
 
-初回実行時、`mcp.json.template`から`~/.config/claude/mcp.json`が生成される。
-`envsubst`がインストールされていれば環境変数が展開される。
-
-## MCPサーバーの追加
-
-### CLIから追加（推奨）
+## よく使う操作
 
 ```bash
-# PostgreSQL
-claude mcp add postgres -- npx -y @bytebase/dbhub --dsn "$POSTGRES_DSN"
-
-# GitHub
-claude mcp add github -- npx -y @anthropic/mcp-server-github
-
-# Filesystem
-claude mcp add filesystem -- npx -y @anthropic/mcp-server-filesystem ~/docs
+claude mcp list                 # 登録済みサーバーと接続状態
+claude mcp get <name>           # 1 つの設定を表示
+claude mcp remove <name>        # 削除
+claude mcp add --scope user chrome-devtools -- npx -y chrome-devtools-mcp@latest
 ```
 
-### テンプレートに追加
+滅多に使わないサーバーには設定エントリに `"alwaysLoad": false` を付けると、そのサーバーのツール定義がツール検索の背後に遅延され、毎セッションのコンテキストを節約できる（2.1.287 以降）。
 
-`mcp.json.template`を編集して環境変数を使った設定を追加：
+`.mcp.json` では `${ENV_VAR}` 形式の環境変数展開が使える（トークンを直書きしない）:
 
 ```json
 {
   "mcpServers": {
-    "postgres": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@bytebase/dbhub", "--dsn", "${POSTGRES_DSN}"]
-    },
     "github": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@anthropic/mcp-server-github"],
-      "env": {
-        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
-      }
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
     }
   }
 }
 ```
 
-環境変数を`.zshrc`や`.envrc`で設定：
+## このマシンの user スコープ（2026-10 時点）
 
-```bash
-export POSTGRES_DSN="postgresql://user:pass@localhost:5432/mydb"
-export GITHUB_TOKEN="ghp_xxxx"
-```
+- `chrome-devtools`: `npx -y chrome-devtools-mcp@latest`（`qa-testing` / `web-perf` スキルが使う）
+- `pencil`: Pencil.app 同梱の MCP サーバー（`permissions.allow` に `mcp__pencil` を許可済み）
 
-## よく使うMCPサーバー
-
-| サーバー | 用途 | インストール |
-|---------|------|------------|
-| `@bytebase/dbhub` | PostgreSQL/MySQL接続 | `npx -y @bytebase/dbhub` |
-| `@anthropic/mcp-server-github` | GitHub操作 | `npx -y @anthropic/mcp-server-github` |
-| `@anthropic/mcp-server-filesystem` | ファイルアクセス | `npx -y @anthropic/mcp-server-filesystem` |
-| `@anthropic/mcp-server-fetch` | HTTPリクエスト | `npx -y @anthropic/mcp-server-fetch` |
-
-## 設定の確認
-
-```bash
-# 現在のMCP設定を確認
-cat ~/.config/claude/mcp.json
-
-# Claude Code内で確認
-claude
-> /mcp
-```
-
-## 注意事項
-
-- 認証情報（トークン、パスワード）は環境変数で管理
-- `mcp.json.template`には実際の認証情報を書かない
-- 新しい環境では`install.sh`実行後、環境変数を設定してから再生成
+新しいマシンでは上の `claude mcp add --scope user` を実行して再現する。

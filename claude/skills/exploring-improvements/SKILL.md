@@ -93,7 +93,7 @@ gh issue create --title "[探索] <視点>: <対象>" --body-file umbrella.md --
 
 ### 6. ループへ渡す
 
-Issue 番号を `designing-ai-loop` に渡し、指標の現在値・目標値・停止条件・エスカレーションを `docs/loops/<name>.md` に書く。実行は `ralph-loop` / `takt` / `herdr-swarm`。⚠️ の項目はループに着手させず、人間がレビューする。
+Issue 番号を `designing-ai-loop` に渡し、指標の現在値・目標値・停止条件・エスカレーションを `docs/loops/<name>.md` に書く。実行は `/goal` / `ralph-loop` / `takt` / `herdr-swarm`。⚠️ の項目はループに着手させず、人間がレビューする。
 
 ## 出力テンプレート（Umbrella Issue）
 
@@ -118,7 +118,7 @@ Issue 番号を `designing-ai-loop` に渡し、指標の現在値・目標値�
 
 ## ループへの受け渡し
 - 停止条件: trace の無い経路数 0、/orders の p95 が 300ms 以下（`docs/loops/acme-api-sre.md`）
-- 起動: `/ralph-wiggum:ralph-loop "Issue #<N> の発見を上から順に、1 項目 1 PR で処理する。⚠️ の項目は着手せず報告する" --max-iterations 10`
+- 起動: `/goal Issue #<N> の発見を上から順に 1 項目 1 PR で処理し、全項目がチェック済みになる。⚠️ の項目は着手せず報告する。or stop after 10 turns`
 ```
 
 ## 赤信号（形が崩れている兆候）

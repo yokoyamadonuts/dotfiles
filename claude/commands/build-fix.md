@@ -1,7 +1,7 @@
 ---
 description: "ビルドエラー・型エラーを最小限の変更で解決。build-error-resolverエージェントを起動してエラーを順次修正。"
 argument-hint: "[--all | --type-only]"
-allowed-tools: ["Task", "Bash", "Read", "Grep", "Glob", "Edit", "TodoWrite"]
+allowed-tools: ["Agent", "Bash", "Read", "Grep", "Glob", "Edit", "TodoWrite"]
 ---
 
 # /build-fix - ビルドエラー修正コマンド

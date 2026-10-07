@@ -211,7 +211,7 @@ fs.writeFileSync('docs/CODEMAPS/auto-generated.md', codemap);
 
 ```bash
 # コードマップの生成
-Task: doc-updater エージェントを使用してフロントエンドのコードマップを更新
+Agent: doc-updater エージェントを使用してフロントエンドのコードマップを更新
 
 # 依存関係グラフの生成
 npx madge --image docs/dependency-graph.svg src/

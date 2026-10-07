@@ -1,7 +1,7 @@
 ---
 description: "デッドコード・重複コード・未使用依存関係を検出して安全に削除。refactor-cleanerエージェントを起動。"
 argument-hint: "[--detect-only | --auto-fix]"
-allowed-tools: ["Task", "Bash", "Read", "Grep", "Glob", "Edit", "TodoWrite", "AskUserQuestion"]
+allowed-tools: ["Agent", "Bash", "Read", "Grep", "Glob", "Edit", "TodoWrite", "AskUserQuestion"]
 ---
 
 # /refactor-clean - コードクリーンアップコマンド

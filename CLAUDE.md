@@ -113,7 +113,7 @@ The `claude/` directory contains custom slash commands for Claude Code:
 - **Review Command**: Systematic 6-phase review process, automatic worktree creation, consistency analysis with existing codebase
 
 ### Installation
-Run `cd claude && ./install.sh` to install Claude Code custom commands to `~/.config/claude/`
+Run `cd claude && ./install.sh` to symlink commands, hooks, agents, skills, rules and settings.json into `~/.claude/` (it warns instead of overwriting an existing `~/.claude/settings.json`)
 
 ## Self-Improvement Protocol
 
@@ -307,7 +307,8 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 ```
 /review          → 技術品質チェック（WHAT: コード品質、セキュリティ、テスト等）
 /design-intent   → 設計意図・出荷判断（WHY: なぜこの設計か、トレードオフ、メンタルモデル）
-/commit          → 両方パス後にコミット
+verify           → lint・型・テストの機械検証（Claude Code 2.1.286 以降はコミット直前に自動実行）
+/commit          → 上がパスしてからコミット
 ```
 
 | 状況 | 使うスキル | 目的 |
@@ -326,7 +327,7 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 出典: mizchi「俺のAIプログラミング手法 (2026/10/05)」。人間は「判断基準・評価指標・検証」を設計し、AI は数値ゴールに向けて自律ループで回す。設計の経緯と既存スキルの精査結果は [docs/superpowers/specs/2026-10-06-ai-coding-loop-skills-design.md](docs/superpowers/specs/2026-10-06-ai-coding-loop-skills-design.md)。
 
 ```
-exploring-improvements  →  designing-ai-loop  →  実行ハーネス（ralph-loop / /loop / takt / herdr-swarm）
+exploring-improvements  →  designing-ai-loop  →  実行ハーネス（/goal / ralph-loop / /loop / takt / herdr-swarm）
 （視点で仕事を見つける）    （数値ゴール・停止条件・エスカレーションを決める）
 ```
 
@@ -334,7 +335,7 @@ exploring-improvements  →  designing-ai-loop  →  実行ハーネス（ralph-
 |------|-----------|--------|
 | 改善点を視点（SRE / セキュリティ攻撃側 / 性能 / 保守性）で洗い出したい | `exploring-improvements` | GitHub Umbrella Issue |
 | AI に任せられるか判定し、評価指標・停止条件・エスカレーションを決めたい | `designing-ai-loop` | `docs/loops/<name>.md` |
-| ループを実際に回したい | `/ralph-wiggum:ralph-loop`（単一プロンプト反復）/ `takt-orchestration`（YAML ピース）/ `herdr-swarm`（並列） | — |
+| ループを実際に回したい | `/goal <条件>`（条件を満たすまで。組み込み）/ `/ralph-wiggum:ralph-loop`（固定回数反復）/ `takt-orchestration`（YAML ピース）/ `herdr-swarm`（並列） | — |
 | 仕様・設定・並行処理の正しさを形式手法で突き合わせたい | `formal-methods-reconciler`（`vcsdd-lite` Phase 5 から参照） | 形式モデル＋反例テスト＋ドメイン語の台帳 |
 
 **境界**: `developing` の `docs/quality-bar.md` はテスト品質の基準（ループ指標の入力）。`ship-check` / `qa-testing` はリリース判定の監査であり探索ではない。スキル自体の精査観点（数値化・ペルソナより視点・既知知識の再掲禁止・失敗分類・鮮度）は `reviewing-skills/references/best-practices.md` §9。

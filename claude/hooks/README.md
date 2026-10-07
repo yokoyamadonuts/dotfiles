@@ -12,42 +12,20 @@ This directory contains custom hooks for Claude Code to enhance the development 
 
 ## Type Definitions
 
-The `types.ts` file provides TypeScript types for Claude Code tool parameters:
+`types.ts` models the hook stdin JSON as documented in the official hooks
+reference: `HookCommonInput` (session_id, cwd, hook_event_name, permission_mode,
+effort, ...) and `PostToolUseHookData` (tool_name, tool_input, tool_response,
+tool_use_id). `tool_input` is typed for `Write` / `Edit` / `Skill`;
+`tool_response` for `Write` is `{ filePath, type }`. `MultiEdit` no longer
+exists upstream and is not modelled.
 
-### PostToolUseHookData
+## Running the tests
 
-```typescript
-type PostToolUseHookData<T = ToolParams> = {
-  session_id: string;
-  transcript_path: string;
-  hook_event_name: string;
-  tool_name: string;
-  tool_input: T;
-  tool_response: {
-    filePath?: string;
-    success: boolean;
-  };
-};
+```bash
+cd claude/hooks && deno test --allow-read --allow-write --allow-env --allow-run
 ```
 
-### Tool Parameter Types
-
-- **WriteToolParams**: Parameters for the Write tool
-  - `file_path`: string - The absolute path to write to
-  - `content`: string - The content to write
-
-- **EditToolParams**: Parameters for the Edit tool
-  - `file_path`: string - The absolute path to edit
-  - `old_string`: string - The text to replace
-  - `new_string`: string - The replacement text
-  - `replace_all?`: boolean - Whether to replace all occurrences
-
-- **MultiEditToolParams**: Parameters for the MultiEdit tool
-  - `file_path`: string - The absolute path to edit
-  - `edits`: Array of edit operations, each containing:
-    - `old_string`: string
-    - `new_string`: string
-    - `replace_all?`: boolean
+`--allow-write` is needed because the integration test creates a temp dir.
 
 ## Usage
 
@@ -55,7 +33,7 @@ The hooks are configured in `../settings.json` and are automatically executed by
 
 ### Format Hook
 
-The format hook runs after Write, Edit, or MultiEdit operations and automatically formats files based on their extension:
+The format hook runs after Write, Edit, and Bash operations. For Bash it formats the files listed in `tool_response.bashEditDiff.changedFiles` (edits Claude made through shell commands in auto mode; absent on older versions → no-op). Files are formatted by extension:
 
 - `.go` files - formatted with `gofmt`
 - `.rs` files - formatted with `rustfmt`
@@ -65,8 +43,11 @@ The format hook runs after Write, Edit, or MultiEdit operations and automaticall
 ### Notify Hook
 
 The notify hook sends desktop notifications when:
-- Claude Code stops execution (`Stop` event)
-- Claude Code needs user attention (`Notification` event)
+- a turn finishes (`Stop` event; the tail of the last message is shown)
+- a turn ends on an API error (`StopFailure` event; the error type is shown)
+- Claude needs attention (`Notification` event: `permission_prompt`, `idle_prompt`, `agent_needs_input`, `agent_completed`)
+
+It uses `terminal-notifier` when installed and otherwise falls back to macOS Notification Center via `osascript`. Errors are swallowed (exit 0) so a broken notifier never blocks a session.
 
 ### Skill Memory Hook
 

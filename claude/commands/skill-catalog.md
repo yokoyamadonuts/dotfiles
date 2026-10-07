@@ -24,3 +24,9 @@ deno run --allow-read --allow-env \
 - **merge? 候補（OVERLAP）**: 人が判断する。重複なら手動でマージ。ヒューリスティックは過検出ありうる前提。
 - カタログは「地図」。破壊的アクションはしない。
 - **VAL 列は構造(Tier-1)チェックのみ**。scripts/tests の失敗はカタログには現れない — `validate-skill <name>`（SP2 のゲート）で検出する。
+
+## 併用する組み込みコマンド（Claude Code 2.1.261 以降）
+
+- `/skill-doctor`: 読み込まれているスキルの使用実績とコンテキストコストを表示。使われないスキルの剪定に使う
+- `/doctor prompt-audit`: CLAUDE.md・スキル・エージェント・コマンドから、古いモデル向けの書き方・古いパス・矛盾を検出する
+- `claude plugin validate ~/.claude/skills`: スキル群の frontmatter を機械検証する
