@@ -302,6 +302,14 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 | 非適用 | 社会発信・音声・スライド系（x-growth, build-in-public, zundamon-video, pr-video, pptx）は register が異なるため対象外 |
 | 出典 | [gist: k16shikano/fd287c…](https://gist.github.com/k16shikano/fd287c3133457c4fd8f5601d34aa817d)（Unlicense / パブリックドメイン） |
 
+`natural-japanese`（[coji/natural-japanese](https://github.com/coji/natural-japanese)、MIT、プラグインとして導入）は仕事の日本語全般の **自然さ・読みやすさ** を扱う。議事録・レポート・ガイド・企画書・ブログの執筆と推敲、AI 臭の診断（`/natural-japanese score <file>`）、`uv run` による形態素解析 lint（禁止語・翻訳調・単調なリズム・読解負荷）を持つ。
+
+| 使い分け | スキル |
+|---------|--------|
+| 技術書・技術記事の原稿: 整形（一文一行・脚注・コラム記法）と論証の規範 | `japanese-tech-writing` |
+| 仕事の文書全般: 結論から書く骨組み、AI 臭の除去、読みやすさの機械検査 | `natural-japanese` |
+| 技術記事を仕上げる | 両方。構成と記法は `japanese-tech-writing`、文の自然さと lint は `natural-japanese`（natural-japanese 自身が「整形は別スキルの領域」と宣言している） |
+
 ### レビュー系スキルの使い分け
 
 ```

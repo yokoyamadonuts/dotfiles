@@ -97,6 +97,7 @@
     "gopls-lsp@claude-plugins-official": true,
     "hookify@claude-code-plugins": true,
     "learning-output-style@claude-code-plugins": true,
+    "natural-japanese@natural-japanese": true,
     "php-lsp@claude-plugins-official": true,
     "pr-review-toolkit@claude-code-plugins": true,
     "ralph-wiggum@claude-code-plugins": true,
@@ -117,6 +118,12 @@
       "source": {
         "source": "github",
         "repo": "sc30gsw/vcsdd-claude-code"
+      }
+    },
+    "natural-japanese": {
+      "source": {
+        "source": "github",
+        "repo": "coji/natural-japanese"
       }
     }
   },
