@@ -145,7 +145,7 @@
 
 ### 5.2 CLAUDE.md
 
-- 「レビュー系スキルの使い分け」の後に **「ループ系スキルの使い分け」** 節を追加: `exploring-improvements` → `designing-ai-loop` → 実行（`ralph-loop` / `takt` / `herdr-swarm`）、`formal-methods-reconciler` ↔ `vcsdd-lite` の関係表。
+- 「レビュー系スキルの使い分け」の後に **「ループ系スキルの使い分け」** 節を追加（origin の CLAUDE.md スリム化と統合した際に `docs/skills-guide.md` へ移動）: `exploring-improvements` → `designing-ai-loop` → 実行（`ralph-loop` / `takt` / `herdr-swarm`）、`formal-methods-reconciler` ↔ `vcsdd-lite` の関係表。
 
 ### 5.3 docs
 

@@ -221,20 +221,8 @@ git log --oneline -n 5
 
 ## 必須遵守事項
 
-**重要**: 共通ルールについては`base-rules.md`を参照してください。
-- バックグラウンドプロセス管理（ghost使用）
-- 不確実性の扱い（推測禁止）
-- コミット規則（テスト通過必須、適切なプレフィックス）
-- エラーハンドリング
-- 作業の進め方（TodoWrite使用）
-
-### コミット固有の品質保証
-
-```bash
-# コミット前の最終確認
-git diff --staged              # ステージングエリアの確認
-git log --oneline -1           # 最新コミットの確認（コミット後）
-```
+共通のコミット規律（テスト通過必須・Tidy First・作業サイクル）は
+`claude/skills/shared/references/must-rules.md` と `claude/rules/common/git-workflow.md` を参照。
 
 ## 使用例
 
