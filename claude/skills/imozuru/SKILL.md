@@ -18,8 +18,11 @@ description: |
 Vendored verbatim from https://github.com/MaryCache/imozuru (MIT, see LICENSE).
 Source: skills/imozuru/ @ 0d656febbc3f5e0a20cb03d3e011b703e69fe034
 Not vendored: README, assets/, examples/, tests/.
-Optional tools on this machine: pdftotext/pdftoppm/yt-dlp present; tesseract (OCR) and ax
-(HTML→md) missing — fetch.py falls back or FAILs as documented below.
+Tools: pdftotext/pdftoppm (poppler), yt-dlp, tesseract (`brew install tesseract`, eng only;
+`brew install tesseract-lang` for jpn), ax (`curl -fsSL https://ax.yusuke.run/install | sh`
+→ ~/.local/bin, SHA-256 verified). python.org Python needs its CA bundle once:
+`sh "/Applications/Python 3.13/Install Certificates.command"` — without it every fetch FAILs
+with CERTIFICATE_VERIFY_FAILED.
 Re-sync: npx degit MaryCache/imozuru/skills/imozuru <this dir> --force
 Do not hand-edit; upstream is authoritative.
 -->
