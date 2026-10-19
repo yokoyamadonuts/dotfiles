@@ -85,6 +85,16 @@ validate-idea → mvp-scaffolding → developing(Vibe Coding) → ship-check
 ```
 → 詳細は [docs/indie-dev-roadmap.md](indie-dev-roadmap.md) を参照
 
+## 調査系スキルの使い分け
+
+| 状況 | 使うスキル | 出力先 |
+|------|-----------|--------|
+| 知らない分野を用語・人・場から掘り、原文（論文・個人ブログ・動画字幕）を要約せず落とす。新着の見張り（`/imozuru watch`） | `imozuru`（[MaryCache/imozuru](https://github.com/MaryCache/imozuru)、MIT、vendor） | `~/research/<話題>/` |
+| 競合・ツール・技術の比較表を作る | `competitive-research` | `docs/research-*.md` |
+| 特定の YouTube 動画の内容を取る | `youtube-research` / `claude-real-video` | 対話中 |
+
+`imozuru` は要約しないのが芯で、判断は原文を読む人がする。比較して結論を出したいときは `competitive-research`。
+
 ## レビュー系スキルの使い分け
 
 ```
