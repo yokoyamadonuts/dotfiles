@@ -69,6 +69,11 @@ function M.parse(res, raw)
 
   if res.code ~= 0 then
     local stderr = vim.trim(res.stderr or "")
+    -- herdr 0.9 以降はサーバ停止などを stderr の JSON で返す
+    local eok, ed = pcall(vim.json.decode, stderr)
+    if eok and type(ed) == "table" and ed.error then
+      return nil, ed.error.message or ed.error.code or "unknown herdr error"
+    end
     -- サーバ未起動時、CLI は生の Rust エラーを出す。そのまま見せない。
     if stderr:find("NotFound", 1, true) or stderr:find("No such file or directory", 1, true) then
       return nil, "herdr server is not running. Start it with: herdr"

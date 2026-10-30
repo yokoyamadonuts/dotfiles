@@ -67,4 +67,14 @@ local v6, e6 = herdr.parse(down)
 t.eq(v6, nil, "server down yields no value")
 t.eq(e6, "herdr server is not running. Start it with: herdr", "friendly server-down message")
 
+-- parse: herdr 0.9 以降はサーバ停止を stderr の JSON で返す
+local down_json = {
+  code = 1,
+  stdout = "",
+  stderr = '{"id":"cli:agent:list","error":{"code":"server_not_running","message":"no herdr server is running; run `herdr` to start or attach it"}}',
+}
+local v7, e7 = herdr.parse(down_json)
+t.eq(v7, nil, "stderr JSON error yields no value")
+t.eq(e7, "no herdr server is running; run `herdr` to start or attach it", "stderr JSON message surfaced")
+
 t.finish()
