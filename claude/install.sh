@@ -38,6 +38,27 @@ if [[ ! -e $HOME/.claude/rules ]]; then
   ln -s $PWD/rules $HOME/.claude/rules
 fi
 
+# Second account (`c2` alias = CLAUDE_CONFIG_DIR=~/.claude-sub). Auth, plugins
+# and ~/.claude-sub/.claude.json stay per account; the repo-managed layers and
+# projects/ (sessions + auto memory) are shared with ~/.claude so both accounts
+# see the same memory and can --resume each other's sessions.
+SUB=$HOME/.claude-sub
+mkdir -p "$SUB"
+for name in commands hooks agents skills rules settings.json; do
+  if [[ ! -e $SUB/$name ]]; then
+    ln -s "$PWD/$name" "$SUB/$name"
+  fi
+done
+if [[ -L $SUB/projects ]]; then
+  : # already shared
+elif [[ ! -e $SUB/projects ]]; then
+  mkdir -p "$HOME/.claude/projects"
+  ln -s "$HOME/.claude/projects" "$SUB/projects"
+else
+  echo "WARNING: $SUB/projects is a real directory, so memory is not shared with ~/.claude."
+  echo "  Merge:  rsync -a $SUB/projects/ $HOME/.claude/projects/ && mv $SUB/projects $SUB/projects.bak-$(date +%Y%m%d) && ln -s $HOME/.claude/projects $SUB/projects"
+fi
+
 # MCP servers are not managed here. Claude Code stores user-scope servers in
 # ~/.claude.json (`claude mcp add --scope user ...`) and project servers in the
 # project's .mcp.json. See MCP.md.

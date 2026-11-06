@@ -16,6 +16,9 @@ alias crun='cargo run --quiet'
 alias c='cargo'
 alias g='git'
 alias ccc='claude'
+# Claude 2アカウント切替: c1=~/.claude (main) / c2=~/.claude-sub。memory は projects/ 共有で共通
+alias c1='claude'
+alias c2='env CLAUDE_CONFIG_DIR=$HOME/.claude-sub claude'
 
 # Worktree quick switch aliases
 alias za='wt a'
