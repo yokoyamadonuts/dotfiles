@@ -134,6 +134,28 @@ exploring-improvements  →  designing-ai-loop  →  実行ハーネス（/goal 
 
 **境界**: `developing` の `docs/quality-bar.md` はテスト品質の基準（ループ指標の入力）。`ship-check` / `qa-testing` はリリース判定の監査であり探索ではない。スキル自体の精査観点（数値化・ペルソナより視点・既知知識の再掲禁止・失敗分類・鮮度）は `reviewing-skills/references/best-practices.md` §9。
 
+## mizchi/skills から vendor したスキル
+
+[mizchi/skills](https://github.com/mizchi/skills) @ `ab4eb2f` から選別して verbatim で取り込んだ。
+`SKILL-ja.md` がある場合はそれを本文にし、各 `SKILL.md` 冒頭の provenance コメントに出典・SHA・ライセンス根拠・再同期コマンド・取り込まなかったファイルを残す。
+上流が正なので手で編集しない（`formal-methods-reconciler` と同じ扱い）。
+
+| 状況 | 使うスキル | 既存スキルとの関係 |
+|------|-----------|-------------------|
+| サブエージェントを増やすか、どの形（sequential / fan-out / supervisor / DAG）で並べるか決めたい | `multi-agent-orchestration` | `herdr-swarm` の手前の判定。既定は単一エージェント |
+| スキルやプロンプトを、バイアスのない実行者に動かして反復改善したい | `empirical-prompt-tuning` | `refining-skills` は経験（`.memory.md`）駆動、こちらは試走駆動 |
+| 試行錯誤の学びを ast-grep ルール / スキル / CLAUDE.md ルールに落としたい | `retrospective-codify` | `.memory.md` の昇格先を選ぶときにも使える |
+| ast-grep を lint として運用したい（`sgconfig.yml`・fix ルール・CI） | `ast-grep-practice` | `retrospective-codify` の出力先 |
+| PR の GitHub Actions が落ちている原因を調べて直したい | `gh-fix-ci`（Apache-2.0） | `build-fix` はローカルのビルドエラー |
+| GitHub Actions を速くしたい（キャッシュ・並列・シャード） | `actions-ci-tuning` | `designing-ai-loop` の CI 予算を守る手段 |
+| テストの質をミューテーションテストで測りたい | `stryker-js` | `developing` / `writing-tests` のテストを評価する側 |
+| 依存ライブラリを上流で直し、マージまで git ref で pin したい | `upstream-fix-and-pin` | — |
+| 技術記事を初見の読者として再現できるか確かめたい | `tech-article-reproducibility` | `japanese-tech-writing` は文章、こちらは再現性 |
+| スキルの description を一括で監査・書き直したい | `optimizing-descriptions` | `reviewing-skills` の定性レビューと別バッチで回す |
+
+取り込まなかったもの: 作者の環境専用（chezmoi・ブログ文体・utels・MoonBit・vlmkit など）、既存スキルと重なるもの（Playwright、Cloudflare、日本語の文章規範）、モデルができてから要る `formal-methods-drift-guard`。
+必要になったら `npx skills add mizchi/skills --skill <name>` か同じ provenance 方式で追加する。
+
 ## TDD系スキルの関係
 
 ```
