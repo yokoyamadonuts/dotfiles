@@ -130,6 +130,8 @@ exploring-improvements  →  designing-ai-loop  →  実行ハーネス（/goal 
 | ループを実際に回したい | `/goal <条件>`（条件を満たすまで。組み込み）/ `/ralph-wiggum:ralph-loop`（固定回数反復）/ `takt-orchestration`（YAML ピース）/ `herdr-swarm`（並列） | — |
 | 仕様・設定・並行処理の正しさを形式手法で突き合わせたい | `formal-methods-reconciler`（`vcsdd-lite` Phase 5 から参照） | 形式モデル＋反例テスト＋ドメイン語の台帳 |
 
+停滞の判定ルール（横ばい・振動・同じ失敗・範囲の膨張）と、形ごとの指標の抜け道は `designing-ai-loop/references/loop-pitfalls.md`。
+
 **境界**: `developing` の `docs/quality-bar.md` はテスト品質の基準（ループ指標の入力）。`ship-check` / `qa-testing` はリリース判定の監査であり探索ではない。スキル自体の精査観点（数値化・ペルソナより視点・既知知識の再掲禁止・失敗分類・鮮度）は `reviewing-skills/references/best-practices.md` §9。
 
 ## TDD系スキルの関係
