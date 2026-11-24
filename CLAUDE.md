@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Repository Overview
 
 Personal dotfiles for macOS and Linux. Modular structure: each tool has its own directory
-(git/, vim/, zsh/, fish/, tmux/, wezterm/, karabiner/, claude/) with config files and an
+(git/, vim/, zsh/, fish/, tmux/, wezterm/, karabiner/, mise/, claude/) with config files and an
 `install.sh` that symlinks them into place.
 
 ## Repository-Specific Gotchas
@@ -15,6 +15,7 @@ Personal dotfiles for macOS and Linux. Modular structure: each tool has its own 
 - **tmux prefix is `Ctrl+s`**, not the default `Ctrl+b`.
 - **ghq-managed repos live under `$HOME/dev`**; many functions assume this.
 - The working volume is **case-sensitive** (`/Volumes/Partition_Case_Sensitive`); beware case-only renames.
+- **Tool versions are managed by mise** (`mise/global.toml` → `~/.config/mise/config.toml`; not named config.toml because mise would treat it as a project config inside this repo). Shells use both `mise activate` (interactive) and `--shims` (non-interactive), because Claude Code hooks call `deno` without a prompt hook. Don't reintroduce asdf / nodenv / rbenv.
 - Modern CLI replacements are assumed (lsd for ls, delta for diff, bat, ripgrep, fzf, lazygit).
 - Commit messages: Conventional Commits (`feat:` / `fix:` …). Committing is done by the `committer` agent.
 

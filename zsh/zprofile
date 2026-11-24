@@ -45,8 +45,9 @@ export GOPATH=$HOME/go # for download modules when use asdf-golang
 export GOBIN=$HOME/go/bin
 export PATH=$GOBIN:$PATH
 
-# Deno
-export PATH=$HOME/.deno/bin:$PATH
+# mise shims: non-interactive processes (Claude Code hooks, IDEs) resolve
+# per-directory tool versions without the zshrc prompt hook
+command -v mise > /dev/null 2>&1 && eval "$(mise activate zsh --shims)"
 
 # fzf settings
 export FZF_DEFAULT_OPTS='--layout=reverse --inline-info --exit-0 -m --preview "bat  --color=always --style=header,grid --line-range :100 {}"'

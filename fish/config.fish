@@ -33,13 +33,7 @@ set -gx WORKTREE_BASE "$HOME/.worktrees"
 set -gx GOPATH "$HOME/go"
 fish_add_path "$GOPATH/bin"
 
-# Deno
-fish_add_path "$HOME/.deno/bin"
-
-# Homebrew (macOS)
-if test (uname -s) = Darwin
-    eval (/opt/homebrew/bin/brew shellenv)
-end
+# Homebrew PATH: conf.d/00-homebrew.fish (must run before conf.d/mise-activate.fish)
 
 # ============================================================
 # Vi Mode
@@ -57,12 +51,7 @@ bind \cg ghq_fzf
 bind -M insert \ck gss
 bind \ck gss
 
-# ============================================================
-# asdf
-# ============================================================
-if test -f (brew --prefix)/opt/asdf/libexec/asdf.fish
-    source (brew --prefix)/opt/asdf/libexec/asdf.fish
-end
+# Tool versions (node / ruby / deno ...) come from mise: conf.d/mise-activate.fish
 
 # ============================================================
 # fzf

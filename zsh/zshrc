@@ -49,11 +49,8 @@ if [ -f $suggest ]; then
   source $suggest
 fi
 
-# asdf settings
-local asdf="$(brew --prefix)/opt/asdf/libexec/asdf.sh"
-if [ -f $asdf ]; then
-  . $asdf
-fi
+# mise: prompt/cd hook for interactive shells (zprofile adds the shims)
+command -v mise > /dev/null 2>&1 && eval "$(mise activate zsh)"
 
 case $( uname -s ) in
   Linux)
