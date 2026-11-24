@@ -1,0 +1,14 @@
+# Global mise config, symlinked to ~/.config/mise/config.toml by install.sh.
+# Project pins (.node-version / mise.toml etc.) override these per directory.
+
+[tools]
+node = "22"
+ruby = "3.4"
+# Standalone so Claude Code hooks (claude/settings.json) find `deno`
+# regardless of which Node version a project pins.
+deno = "2"
+
+[settings]
+# Read the per-tool version files that existing repos already commit,
+# so they don't need a mise.toml. Opt-in per tool since mise 2025.10.
+idiomatic_version_file_enable_tools = ["node", "ruby", "python"]

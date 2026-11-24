@@ -67,6 +67,6 @@ fi
 if ! command -v deno &> /dev/null; then
   echo ""
   echo "Note: 'deno' not found. The hooks in settings.json (format / notify / skill-memory) and the vcsdd-lite / reviewing-skills scripts require Deno."
-  echo "Install: curl -fsSL https://deno.land/install.sh | sh"
+  echo "Install: (cd ../mise && ./install.sh)   # mise/global.toml pins deno globally"
   echo "(Skills work without the scripts; hooks silently fail open without Deno.)"
 fi
