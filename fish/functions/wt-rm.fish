@@ -25,7 +25,7 @@ function wt-rm
 end
 
 # Stop docker compose projects whose compose files live under <dir>.
-# Returns non-zero to tell wt-rm to keep the worktree.
+# Declining keeps the worktree, so the stacks are not left orphaned.
 function __wt_compose_down --argument-names dir
     type -q docker; or return 0
     type -q jq; or return 0
@@ -41,17 +41,5 @@ function __wt_compose_down --argument-names dir
 
     echo "Docker compose stacks under $real:"
     printf '  %s\n' $projects
-
-    set -l down_args --remove-orphans
-
-    # Declining keeps the worktree, so the stacks are not left orphaned.
-    read -l -P "Stop them? [y/N] " answer
-    string match -qri '^y' -- "$answer"; or return 1
-
-    read -l -P "Also delete their volumes (DB data is lost)? [y/N] " answer
-    string match -qri '^y' -- "$answer"; and set -a down_args --volumes
-
-    for p in $projects
-        docker compose -p $p down $down_args
-    end
+    __compose_down_confirm $projects
 end

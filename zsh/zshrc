@@ -184,8 +184,26 @@ wt-add() {
   cd "$target"
 }
 
+# Ask, then `docker compose down` the given projects (callers list them first).
+# Shared by wt-rm and compose-gc. Returns 1 when the user declines.
+_compose_down_confirm() {
+  (( $# )) || return 0
+  local -a down_args=(--remove-orphans)
+  local answer
+  read -r "answer?Stop them? [y/N] "
+  [[ "$answer" == [yY]* ]] || return 1
+
+  read -r "answer?Also delete their volumes (DB data is lost)? [y/N] "
+  [[ "$answer" == [yY]* ]] && down_args+=(--volumes)
+
+  local p
+  for p in "$@"; do
+    docker compose -p "$p" down $down_args
+  done
+}
+
 # Stop docker compose projects whose compose files live under <dir>.
-# Returns non-zero to tell wt-rm to keep the worktree.
+# Declining keeps the worktree, so the stacks are not left orphaned.
 _wt_compose_down() {
   (( $+commands[docker] && $+commands[jq] )) || return 0
   # compose records absolute, symlink-resolved paths
@@ -199,21 +217,38 @@ _wt_compose_down() {
 
   echo "Docker compose stacks under $real:"
   printf '  %s\n' $projects
+  _compose_down_confirm $projects
+}
 
-  local -a down_args=(--remove-orphans)
+# Stop docker compose stacks whose compose files no longer exist
+# (e.g. started from a worktree that Claude Code or `git worktree remove` deleted).
+compose-gc() {
+  (( $+commands[docker] && $+commands[jq] )) || { echo "compose-gc needs docker and jq"; return 1; }
+  local listing
+  listing=$(docker compose ls --all --format json 2>/dev/null) || { echo "Docker is not running"; return 1; }
 
-  # Declining keeps the worktree, so the stacks are not left orphaned.
-  local answer
-  read -r "answer?Stop them? [y/N] "
-  [[ "$answer" == [yY]* ]] || return 1
+  local -a orphans lines files
+  local name cfg f alive
+  while IFS=$'\t' read -r name cfg; do
+    [[ -n "$name" ]] || continue
+    files=(${(s:,:)cfg})
+    # Orphaned only when every compose file is gone
+    alive=0
+    for f in $files; do [[ -e "$f" ]] && alive=1; done
+    if (( ! alive )); then
+      orphans+=("$name")
+      lines+=("$(printf '  %-40s %s' "$name" "${files[1]:h}")")
+    fi
+  done < <(print -r -- "$listing" | jq -r '.[] | [.Name, .ConfigFiles] | @tsv')
 
-  read -r "answer?Also delete their volumes (DB data is lost)? [y/N] "
-  [[ "$answer" == [yY]* ]] && down_args+=(--volumes)
+  if (( ! ${#orphans} )); then
+    echo "No orphaned compose stacks."
+    return 0
+  fi
 
-  local p
-  for p in $projects; do
-    docker compose -p "$p" down $down_args
-  done
+  echo "Orphaned compose stacks (their compose files are gone):"
+  printf '%s\n' $lines
+  _compose_down_confirm $orphans
 }
 
 # Remove worktree (and the docker compose stacks started from it)
